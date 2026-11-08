@@ -1,0 +1,129 @@
+<div class="chat-layout d-flex overflow-hidden">
+
+  <!-- Sessions Sidebar -->
+  <div class="chat-sidebar border-end d-flex flex-column" [class.d-none]="activeSessId() && isMobile">
+    <div class="p-3 border-bottom bg-dark text-white">
+      <h5 class="mb-0 fw-bold"><i class="bi bi-chat-dots me-2 text-warning"></i>Chats</h5>
+    </div>
+
+    @if (loadingSessions()) {
+      <cb-loading-spinner size="sm" minHeight="100px" />
+    } @else if (sessions().length === 0) {
+      <div class="text-center p-4 text-muted">
+        <i class="bi bi-chat-square-dots fs-2 d-block mb-2"></i>
+        <small>No conversations yet</small>
+      </div>
+    } @else {
+      <div class="flex-grow-1 overflow-y-auto">
+        @for (session of sessions(); track session.id) {
+          <button
+            class="w-100 text-start session-item border-0 bg-transparent p-3 border-bottom"
+            [class.active]="activeSessId() === session.id"
+            (click)="openSession(session.id)"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-sm bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                {{ getOtherParticipantName(session).charAt(0) }}
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-semibold small text-truncate">{{ getOtherParticipantName(session) }}</span>
+                  <span class="text-muted" style="font-size: 0.7rem">{{ session.lastMessageDate | timeAgo }}</span>
+                </div>
+                <div class="small text-muted text-truncate">{{ session.lastMessage }}</div>
+              </div>
+              @if (session.unreadCount > 0) {
+                <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem">{{ session.unreadCount }}</span>
+              }
+            </div>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area flex-grow-1 d-flex flex-column">
+    @if (!activeSessId()) {
+      <div class="flex-grow-1 d-flex align-items-center justify-content-center text-muted">
+        <div class="text-center">
+          <i class="bi bi-chat-dots-fill fs-1 d-block mb-3 opacity-25"></i>
+          <p>Select a conversation to start chatting</p>
+        </div>
+      </div>
+    } @else {
+      <!-- Chat Header -->
+      <div class="p-3 border-bottom bg-white d-flex align-items-center gap-2 shadow-sm">
+        <div class="avatar-sm bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+          {{ activeSession()?.participant1Id === authState.currentUser()?.id
+            ? activeSession()?.participant2Name?.charAt(0)
+            : activeSession()?.participant1Name?.charAt(0) }}
+        </div>
+        <div>
+          <div class="fw-semibold">
+            {{ activeSession()?.participant1Id === authState.currentUser()?.id
+              ? activeSession()?.participant2Name
+              : activeSession()?.participant1Name }}
+          </div>
+          <div class="small text-muted text-success">Online</div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div #messagesContainer class="flex-grow-1 overflow-y-auto p-3 messages-area bg-light">
+        @if (loadingMessages()) {
+          <cb-loading-spinner size="sm" minHeight="100px" />
+        } @else {
+          @for (msg of messages(); track msg.id) {
+            <div class="d-flex mb-3" [class.justify-content-end]="isMyMessage(msg)">
+              @if (!isMyMessage(msg)) {
+                <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="font-size:0.7rem">
+                  {{ msg.senderName?.charAt(0) }}
+                </div>
+              }
+              <div class="message-bubble px-3 py-2 rounded-3 shadow-sm" [class.my-message]="isMyMessage(msg)" [class.their-message]="!isMyMessage(msg)" style="max-width: 70%">
+                @if (!isMyMessage(msg)) {
+                  <div class="small fw-semibold mb-1 opacity-75">{{ msg.senderName }}</div>
+                }
+                <div class="mb-1" style="white-space: pre-wrap; word-break: break-word">{{ msg.message }}</div>
+                <div class="text-end small opacity-50" style="font-size: 0.65rem">
+                  {{ msg.createdDate | date:'shortTime' }}
+                  @if (isMyMessage(msg)) {
+                    <i class="bi ms-1" [class.bi-check]="!msg.isRead" [class.bi-check-all]="msg.isRead" [class.text-info]="msg.isRead"></i>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 border-top bg-white">
+        <div class="d-flex gap-2 align-items-end">
+          <textarea
+            class="form-control form-control-sm"
+            rows="1"
+            placeholder="Type a message..."
+            style="resize: none; max-height: 120px"
+            [value]="messageText()"
+            (input)="messageText.set($any($event.target).value); onTyping()"
+            (keydown)="onKeydown($event)"
+          ></textarea>
+          <button
+            class="btn btn-warning btn-sm px-3 flex-shrink-0"
+            (click)="sendMessage()"
+            [disabled]="!messageText().trim() || sending()"
+          >
+            @if (sending()) {
+              <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+              <i class="bi bi-send-fill"></i>
+            }
+          </button>
+        </div>
+        <div class="small text-muted mt-1" style="font-size: 0.7rem">Press Enter to send, Shift+Enter for new line</div>
+      </div>
+    }
+  </div>
+</div>

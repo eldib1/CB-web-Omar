@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  height: calc(100vh - 60px);
+}
+
+.chat-layout {
+  height: 100%;
+}
+
+.chat-sidebar {
+  width: 320px;
+  min-width: 280px;
+  max-width: 320px;
+  background: #fff;
+}
+
+.chat-area {
+  min-width: 0;
+}
+
+.session-item {
+  transition: background 0.15s;
+  &:hover { background: rgba(0,0,0,0.04) !important; }
+  &.active { background: rgba(255,193,7,0.12) !important; border-left: 3px solid var(--bs-warning); }
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.85rem;
+}
+
+.messages-area {
+  background: #f8f9fa;
+}
+
+.message-bubble {
+  border-radius: 18px !important;
+  &.my-message {
+    background: #ffc107;
+    color: #212529;
+    border-bottom-right-radius: 4px !important;
+  }
+  &.their-message {
+    background: #fff;
+    color: #212529;
+    border-bottom-left-radius: 4px !important;
+    border: 1px solid #e9ecef;
+  }
+}
+
+@media (max-width: 767px) {
+  .chat-sidebar { width: 100%; max-width: 100%; }
+}

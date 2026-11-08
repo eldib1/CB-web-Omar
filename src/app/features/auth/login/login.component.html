@@ -1,0 +1,73 @@
+<div class="min-vh-100 bg-dark d-flex align-items-center py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <div class="text-center mb-4">
+          <a routerLink="/" class="text-decoration-none">
+            <i class="bi bi-car-front-fill text-warning fs-1"></i>
+            <h1 class="text-warning fw-bold fs-3 mt-2">ClutchBids</h1>
+          </a>
+          <p class="text-secondary">Sign in to your account</p>
+        </div>
+
+        <div class="card bg-dark border border-secondary shadow-lg">
+          <div class="card-body p-4">
+            <h4 class="text-white fw-bold mb-4">Welcome Back</h4>
+
+            <form [formGroup]="form" (ngSubmit)="submit()">
+              <div class="mb-3">
+                <label class="form-label text-light small">Email Address</label>
+                <input
+                  type="email"
+                  class="form-control bg-dark text-light border-secondary"
+                  [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                  formControlName="email"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                />
+                @if (f['email'].invalid && f['email'].touched) {
+                  <div class="invalid-feedback">Please enter a valid email.</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label text-light small mb-0">Password</label>
+                  <a routerLink="/auth/forgot-password" class="text-warning small">Forgot password?</a>
+                </div>
+                <input
+                  type="password"
+                  class="form-control bg-dark text-light border-secondary"
+                  [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                  formControlName="password"
+                  placeholder="Your password"
+                  autocomplete="current-password"
+                />
+                @if (f['password'].invalid && f['password'].touched) {
+                  <div class="invalid-feedback">Password is required.</div>
+                }
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-warning w-100 fw-semibold"
+                [disabled]="loading()"
+              >
+                @if (loading()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Sign In
+              </button>
+            </form>
+
+            <p class="text-secondary text-center small mt-3 mb-0">
+              Don't have an account?
+              <a routerLink="/auth/register" class="text-warning">Create one</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1909 @@
+# ClutchBids API Documentation
+
+## Overview
+ClutchBids is a car listing and auction platform API built with .NET 10. This documentation provides comprehensive details about all available endpoints, their inputs, outputs, and functionality.
+
+**Base URL:** `https://api.clutchbids.com/api/`
+
+---
+
+## Table of Contents
+1. [Authentication Endpoints](#authentication-endpoints)
+2. [Car Listings Endpoints](#car-listings-endpoints)
+3. [Price Offers Endpoints](#price-offers-endpoints)
+4. [Admin Endpoints](#admin-endpoints)
+5. [Super Admin Endpoints](#super-admin-endpoints)
+6. [Chat Endpoints](#chat-endpoints)
+7. [User Reporting Endpoints](#user-reporting-endpoints)
+8. [Dashboard Endpoints](#dashboard-endpoints)
+9. [Configuration Endpoints](#configuration-endpoints)
+10. [Listing Codes Endpoints](#listing-codes-endpoints)
+
+---
+
+## Authentication Endpoints
+
+### Base Path: `/api/auth`
+
+#### 1. Login
+**Endpoint:** `POST /api/auth/login`
+
+**Authentication:** None (Public)
+
+**Description:** Authenticates a user and returns access and refresh tokens.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "fullName": "John Doe",
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+    "role": "User"
+  }
+}
+```
+
+**Error Response (401 Unauthorized):**
+```json
+{
+  "success": false,
+  "message": "Invalid credentials"
+}
+```
+
+---
+
+#### 2. Register
+**Endpoint:** `POST /api/auth/register`
+
+**Authentication:** None (Public)
+
+**Description:** Creates a new user account. The user must verify their email after registration.
+
+**Request Body:**
+```json
+{
+  "email": "newuser@example.com",
+  "password": "securePassword123",
+  "fullName": "John Doe",
+  "phoneNumber": "+1234567890"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "data": {
+    "id": 1,
+    "email": "newuser@example.com",
+    "fullName": "John Doe",
+    "role": "User"
+  }
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "success": false,
+  "message": "Email already exists"
+}
+```
+
+---
+
+#### 3. Verify Email
+**Endpoint:** `POST /api/auth/verify-email`
+
+**Authentication:** None (Public)
+
+**Description:** Verifies user email using a token sent to their email address.
+
+**Query Parameters:**
+- `email` (string, required): User email address
+- `token` (string, required): Verification token from email
+
+**Response (200 OK):**
+```json
+{
+  "message": "Email verified successfully"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Invalid or expired verification token"
+}
+```
+
+---
+
+#### 4. Forgot Password
+**Endpoint:** `POST /api/auth/forgot-password`
+
+**Authentication:** None (Public)
+
+**Description:** Sends a password reset link to the user's email address.
+
+**Request Body:**
+```json
+"user@example.com"
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Password reset link sent to your email"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "User not found"
+}
+```
+
+---
+
+#### 5. Reset Password
+**Endpoint:** `POST /api/auth/reset-password`
+
+**Authentication:** None (Public)
+
+**Description:** Resets user password using a reset token.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "token": "resetTokenFromEmail",
+  "newPassword": "newSecurePassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Invalid or expired reset token"
+}
+```
+
+---
+
+#### 6. Refresh Token
+**Endpoint:** `POST /api/auth/refresh-token`
+
+**Authentication:** None (Public)
+
+**Description:** Generates a new access token using a refresh token.
+
+**Request Body:**
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "accessToken": "newAccessToken...",
+    "refreshToken": "newRefreshToken..."
+  }
+}
+```
+
+**Error Response (401 Unauthorized):**
+```json
+{
+  "success": false,
+  "message": "Invalid or expired refresh token"
+}
+```
+
+---
+
+## Car Listings Endpoints
+
+### Base Path: `/api/carlistings`
+
+#### 1. Search Listings
+**Endpoint:** `GET /api/carlistings/search`
+
+**Authentication:** None (Public)
+
+**Description:** Searches car listings with optional filters. Returns different data based on authentication status.
+
+**Query Parameters:**
+- `make` (string, optional): Car manufacturer (e.g., "Toyota")
+- `model` (string, optional): Car model (e.g., "Camry")
+- `year` (int, optional): Manufacturing year
+- `minPrice` (decimal, optional): Minimum price
+- `maxPrice` (decimal, optional): Maximum price
+- `mileage` (int, optional): Maximum mileage
+- `location` (string, optional): Location/city
+- `status` (string, optional): Listing status (Active, Pending, etc.)
+- `pageNumber` (int, optional, default: 1): Page number for pagination
+- `pageSize` (int, optional, default: 10): Items per page
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "title": "2020 Toyota Camry",
+        "make": "Toyota",
+        "model": "Camry",
+        "year": 2020,
+        "price": 15000,
+        "mileage": 45000,
+        "location": "New York",
+        "images": ["url1", "url2"],
+        "description": "Excellent condition",
+        "status": "Active"
+      }
+    ],
+    "totalCount": 100,
+    "pageNumber": 1,
+    "pageSize": 10
+  }
+}
+```
+
+---
+
+#### 2. Get Listing Details
+**Endpoint:** `GET /api/carlistings/{id}`
+
+**Authentication:** None (Public, but shows different info if authenticated)
+
+**Description:** Retrieves detailed information about a specific car listing.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "title": "2020 Toyota Camry",
+  "description": "Well-maintained sedan",
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2020,
+  "price": 15000,
+  "mileage": 45000,
+  "location": "New York",
+  "vin": "VIN123456789",
+  "transmission": "Automatic",
+  "fuelType": "Gasoline",
+  "images": ["url1", "url2"],
+  "videos": ["videoUrl1"],
+  "documents": ["docUrl1"],
+  "seller": {
+    "id": 1,
+    "name": "John Seller",
+    "email": "seller@example.com",
+    "rating": 4.5,
+    "totalListings": 10
+  },
+  "status": "Active",
+  "createdDate": "2024-01-15",
+  "currentOffers": 5  // Only visible if authenticated
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "Listing not found"
+}
+```
+
+---
+
+#### 3. Create Listing
+**Endpoint:** `POST /api/carlistings/create`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Creates a new car listing. Requires user to have available listing codes.
+
+**Request Body:**
+```json
+{
+  "title": "2020 Toyota Camry",
+  "description": "Well-maintained sedan with complete service history",
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2020,
+  "price": 15000,
+  "mileage": 45000,
+  "location": "New York",
+  "vin": "VIN123456789",
+  "transmission": "Automatic",
+  "fuelType": "Gasoline",
+  "bodyType": "Sedan",
+  "color": "Silver",
+  "interiorColor": "Black"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "title": "2020 Toyota Camry",
+  "status": "Draft",
+  "message": "Listing created successfully. Submit for approval to make it visible."
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to create listing"
+}
+```
+
+---
+
+#### 4. Submit Listing for Approval
+**Endpoint:** `POST /api/carlistings/{id}/submit-for-approval`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Submits a draft listing for admin approval.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing submitted for approval"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to submit listing for approval"
+}
+```
+
+---
+
+#### 5. Approve Listing
+**Endpoint:** `POST /api/carlistings/{id}/approve`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin approves a submitted car listing, making it visible to buyers.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing approved successfully"
+}
+```
+
+---
+
+#### 6. Reject Listing
+**Endpoint:** `POST /api/carlistings/{id}/reject`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin rejects a listing and starts a chat session with the seller explaining the reason.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Request Body:**
+```json
+{
+  "reason": "Images are not clear. Please provide better quality photos."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing rejected successfully. A chat session has been started with the user."
+}
+```
+
+---
+
+#### 7. Deactivate Listing
+**Endpoint:** `POST /api/carlistings/{id}/deactivate`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Seller deactivates an active listing temporarily.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing deactivated successfully"
+}
+```
+
+---
+
+#### 8. Mark Listing as Sold
+**Endpoint:** `POST /api/carlistings/{id}/mark-as-sold`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Seller marks a listing as sold.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing marked as sold successfully"
+}
+```
+
+---
+
+#### 9. Upload Sale Proof
+**Endpoint:** `POST /api/carlistings/{id}/upload-sale-proof`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Seller uploads proof of sale for a marked-as-sold listing.
+
+**Path Parameters:**
+- `id` (long, required): Listing ID
+
+**Form Data:**
+- `file` (file, required): Document/image proving the sale (PDF, JPG, PNG)
+
+**Response (200 OK):**
+```json
+{
+  "message": "Sale proof uploaded successfully"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "No file provided"
+}
+```
+
+---
+
+## Price Offers Endpoints
+
+### Base Path: `/api/priceoffers`
+
+#### 1. Create Offer
+**Endpoint:** `POST /api/priceoffers/create`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Buyer creates a price offer on a car listing.
+
+**Request Body:**
+```json
+{
+  "listingId": 1,
+  "offerPrice": 14000,
+  "message": "I'm interested in this car. Would you accept this price?"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "listingId": 1,
+  "buyerId": 2,
+  "offerPrice": 14000,
+  "originalPrice": 15000,
+  "status": "Pending",
+  "message": "I'm interested in this car. Would you accept this price?",
+  "createdDate": "2024-01-20"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to create offer"
+}
+```
+
+---
+
+#### 2. Get Offer Details
+**Endpoint:** `GET /api/priceoffers/{id}`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Retrieves details of a specific price offer.
+
+**Path Parameters:**
+- `id` (long, required): Offer ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "listingId": 1,
+  "buyerId": 2,
+  "sellerId": 1,
+  "offerPrice": 14000,
+  "originalPrice": 15000,
+  "status": "Pending",
+  "message": "I'm interested in this car.",
+  "buyerName": "John Buyer",
+  "listing": {
+    "id": 1,
+    "title": "2020 Toyota Camry"
+  },
+  "createdDate": "2024-01-20"
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "Offer not found"
+}
+```
+
+---
+
+#### 3. Accept Offer
+**Endpoint:** `POST /api/priceoffers/{id}/accept`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Seller accepts a price offer. Automatically creates a chat session between buyer and seller.
+
+**Path Parameters:**
+- `id` (long, required): Offer ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Offer accepted successfully",
+  "data": {
+    "id": 1,
+    "status": "Accepted",
+    "chatSessionId": 5,
+    "message": "Offer accepted. You can now communicate with the buyer."
+  }
+}
+```
+
+---
+
+#### 4. Reject Offer
+**Endpoint:** `POST /api/priceoffers/{id}/reject`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Seller rejects a price offer.
+
+**Path Parameters:**
+- `id` (long, required): Offer ID
+
+**Request Body:**
+```json
+{
+  "rejectionReason": "Price is too low. I'm looking for at least $14,500."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Offer rejected successfully",
+  "data": {
+    "id": 1,
+    "status": "Rejected",
+    "rejectionReason": "Price is too low. I'm looking for at least $14,500."
+  }
+}
+```
+
+---
+
+#### 5. Withdraw Offer
+**Endpoint:** `POST /api/priceoffers/{id}/withdraw`
+
+**Authentication:** Required (Roles: User, Admin, SuperAdmin)
+
+**Description:** Buyer withdraws a pending offer.
+
+**Path Parameters:**
+- `id` (long, required): Offer ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Offer withdrawn successfully"
+}
+```
+
+---
+
+## Chat Endpoints
+
+### Base Path: `/api/chats`
+
+#### 1. Create Admin Chat
+**Endpoint:** `POST /api/chats/admin-chat`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin initiates a chat session with a user and sends an initial message.
+
+**Request Body:**
+```json
+{
+  "userId": 1,
+  "message": "Hi, we need to discuss your account verification."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "adminId": 2,
+  "userId": 1,
+  "initiatedBy": "Admin",
+  "createdDate": "2024-01-20",
+  "lastMessageDate": "2024-01-20",
+  "unreadCount": 0,
+  "lastMessage": "Hi, we need to discuss your account verification."
+}
+```
+
+---
+
+#### 2. Create Offer Acceptance Chat
+**Endpoint:** `POST /api/chats/offer-acceptance-chat`
+
+**Authentication:** Required
+
+**Description:** Automatically creates a chat session when a seller accepts a buyer's offer.
+
+**Query Parameters:**
+- `buyerId` (long, required): Buyer's user ID
+- `offerId` (long, required): Offer ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "sellerId": 1,
+  "buyerId": 2,
+  "offerId": 5,
+  "createdDate": "2024-01-20",
+  "initialMessage": "Your offer has been accepted! You can now communicate with the seller.",
+  "unreadCount": 0
+}
+```
+
+---
+
+#### 3. Create User Rejection Chat
+**Endpoint:** `POST /api/chats/user-rejection-chat`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin creates a chat with rejection reason for account verification rejection.
+
+**Query Parameters:**
+- `userId` (long, required): User ID being rejected
+- `rejectionReason` (string, required): Reason for rejection
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "adminId": 2,
+  "userId": 1,
+  "createdDate": "2024-01-20",
+  "initialMessage": "Your account verification was rejected. Reason: Your documents are not clear. Please provide clear copies.",
+  "unreadCount": 0
+}
+```
+
+---
+
+#### 4. Create Listing Rejection Chat
+**Endpoint:** `POST /api/chats/listing-rejection-chat`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin creates a chat with rejection reason for car listing rejection.
+
+**Query Parameters:**
+- `userId` (long, required): Seller user ID
+- `carListingId` (long, required): Car listing ID
+- `rejectionReason` (string, required): Reason for listing rejection
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "adminId": 2,
+  "userId": 1,
+  "carListingId": 5,
+  "createdDate": "2024-01-20",
+  "initialMessage": "Your listing was rejected. Reason: Images are not clear. Please provide better quality photos.",
+  "unreadCount": 0
+}
+```
+
+---
+
+#### 5. Send Message
+**Endpoint:** `POST /api/chats/send-message`
+
+**Authentication:** Required
+
+**Description:** Sends a message in an existing chat session.
+
+**Request Body:**
+```json
+{
+  "chatSessionId": 1,
+  "receiverId": 2,
+  "message": "Thank you for your offer. I'll consider it."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "chatSessionId": 1,
+  "senderId": 1,
+  "receiverId": 2,
+  "message": "Thank you for your offer. I'll consider it.",
+  "isRead": false,
+  "createdDate": "2024-01-20T10:30:00"
+}
+```
+
+---
+
+#### 6. Get My Chats
+**Endpoint:** `GET /api/chats/my-chats`
+
+**Authentication:** Required
+
+**Description:** Retrieves all chat sessions for the authenticated user.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "otherUserId": 2,
+      "otherUserName": "John Doe",
+      "otherUserAvatar": "avatarUrl",
+      "lastMessage": "When can you meet?",
+      "lastMessageDate": "2024-01-20T10:30:00",
+      "unreadCount": 2,
+      "isAdmin": false
+    },
+    {
+      "id": 2,
+      "adminId": 3,
+      "adminName": "Admin Support",
+      "lastMessage": "Please check your email for verification link.",
+      "lastMessageDate": "2024-01-19T15:45:00",
+      "unreadCount": 0,
+      "isAdmin": true
+    }
+  ]
+}
+```
+
+---
+
+#### 7. Get Chat Messages
+**Endpoint:** `GET /api/chats/{chatSessionId}/messages`
+
+**Authentication:** Required
+
+**Description:** Retrieves all messages from a specific chat session.
+
+**Path Parameters:**
+- `chatSessionId` (long, required): Chat session ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "participant1Id": 1,
+  "participant1Name": "John Seller",
+  "participant2Id": 2,
+  "participant2Name": "Jane Buyer",
+  "messages": [
+    {
+      "id": 1,
+      "senderId": 1,
+      "senderName": "John Seller",
+      "message": "Hi, I'm interested in selling this car.",
+      "isRead": true,
+      "createdDate": "2024-01-20T10:00:00"
+    },
+    {
+      "id": 2,
+      "senderId": 2,
+      "senderName": "Jane Buyer",
+      "message": "What's the lowest price you'd accept?",
+      "isRead": false,
+      "createdDate": "2024-01-20T10:15:00"
+    }
+  ]
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "Chat session not found or you don't have access"
+}
+```
+
+---
+
+#### 8. Get Chat Session
+**Endpoint:** `GET /api/chats/{chatSessionId}`
+
+**Authentication:** Required
+
+**Description:** Retrieves details of a specific chat session.
+
+**Path Parameters:**
+- `chatSessionId` (long, required): Chat session ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "participant1Id": 1,
+  "participant1Name": "John Seller",
+  "participant1Avatar": "avatarUrl",
+  "participant2Id": 2,
+  "participant2Name": "Jane Buyer",
+  "participant2Avatar": "avatarUrl",
+  "createdDate": "2024-01-20",
+  "lastActivityDate": "2024-01-20T10:30:00",
+  "unreadCount": 2,
+  "relatedOfferId": 5
+}
+```
+
+---
+
+#### 9. Mark Message as Read
+**Endpoint:** `PUT /api/chats/message/{messageId}/read`
+
+**Authentication:** Required
+
+**Description:** Marks a single message as read.
+
+**Path Parameters:**
+- `messageId` (long, required): Message ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Message marked as read"
+}
+```
+
+---
+
+## User Reporting Endpoints
+
+### Base Path: `/api/reporting`
+
+#### 1. Report User
+**Endpoint:** `POST /api/reporting/report-user`
+
+**Authentication:** Required
+
+**Description:** User reports another user for inappropriate behavior or violations.
+
+**Request Body:**
+```json
+{
+  "reportedUserId": 5,
+  "reason": "Suspicious activity and potential scam",
+  "description": "This user is asking for payment via wire transfer outside the platform, which is suspicious."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Report submitted successfully",
+  "data": {
+    "id": 1,
+    "reporterId": 1,
+    "reportedUserId": 5,
+    "reason": "Suspicious activity and potential scam",
+    "description": "This user is asking for payment via wire transfer outside the platform, which is suspicious.",
+    "status": "Pending",
+    "createdDate": "2024-01-20"
+  }
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to create report. Please check the reported user ID."
+}
+```
+
+---
+
+#### 2. Get Pending Reports
+**Endpoint:** `GET /api/reporting/pending`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Retrieves all pending user reports.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "reporterId": 1,
+      "reporterName": "John Reporter",
+      "reportedUserId": 5,
+      "reportedUserName": "Suspicious User",
+      "reason": "Suspicious activity and potential scam",
+      "description": "This user is asking for payment via wire transfer...",
+      "status": "Pending",
+      "createdDate": "2024-01-20"
+    }
+  ]
+}
+```
+
+---
+
+#### 3. Get User Reports
+**Endpoint:** `GET /api/reporting/user/{userId}`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Retrieves all reports for a specific user.
+
+**Path Parameters:**
+- `userId` (long, required): User ID
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "reporterId": 1,
+      "reporterName": "John Reporter",
+      "reportedUserId": 5,
+      "reason": "Suspicious activity",
+      "status": "Pending",
+      "createdDate": "2024-01-20"
+    }
+  ]
+}
+```
+
+---
+
+#### 4. Get Reports by Status
+**Endpoint:** `GET /api/reporting/status/{status}`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Retrieves reports filtered by status.
+
+**Path Parameters:**
+- `status` (int, required): Status code (0 = Pending, 1 = Under Review, 2 = Resolved, 3 = Dismissed)
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "reporterName": "John Reporter",
+      "reportedUserName": "Suspicious User",
+      "reason": "Suspicious activity",
+      "status": "Pending",
+      "createdDate": "2024-01-20"
+    }
+  ]
+}
+```
+
+---
+
+#### 5. Review Report
+**Endpoint:** `POST /api/reporting/review`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+**Description:** Admin reviews a report and takes action (warn, suspend, or dismiss).
+
+**Request Body:**
+```json
+{
+  "reportId": 1,
+  "action": 1,
+  "notes": "User has been warned about suspicious activity"
+}
+```
+
+**Action Codes:**
+- `0` = Dismiss
+- `1` = Warn User
+- `2` = Suspend User
+
+**Response (200 OK):**
+```json
+{
+  "message": "Report reviewed and actioned successfully"
+}
+```
+
+---
+
+## Admin Endpoints
+
+### Base Path: `/api/admin`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+#### 1. Get Pending Users
+**Endpoint:** `GET /api/admin/pending-users`
+
+**Description:** Retrieves users awaiting email verification.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "newuser@example.com",
+      "fullName": "John Doe",
+      "phoneNumber": "+1234567890",
+      "registrationDate": "2024-01-20",
+      "status": "PendingEmailVerification"
+    }
+  ]
+}
+```
+
+---
+
+#### 2. Get All Users
+**Endpoint:** `GET /api/admin/all-users`
+
+**Description:** Retrieves all users in the system.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "fullName": "John Doe",
+      "phoneNumber": "+1234567890",
+      "status": "Verified",
+      "role": "User",
+      "registrationDate": "2024-01-15",
+      "totalListings": 5,
+      "totalOffers": 10,
+      "rating": 4.5
+    }
+  ]
+}
+```
+
+---
+
+#### 3. Get User Details
+**Endpoint:** `GET /api/admin/user/{userId}`
+
+**Description:** Retrieves detailed information about a specific user.
+
+**Path Parameters:**
+- `userId` (long, required): User ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phoneNumber": "+1234567890",
+  "status": "Verified",
+  "role": "User",
+  "registrationDate": "2024-01-15",
+  "emailVerifiedDate": "2024-01-15",
+  "lastLoginDate": "2024-01-20",
+  "totalListings": 5,
+  "totalOffers": 10,
+  "rating": 4.5,
+  "suspensionReason": null,
+  "suspensionDate": null
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "User not found"
+}
+```
+
+---
+
+#### 4. Approve User
+**Endpoint:** `POST /api/admin/approve-user`
+
+**Description:** Admin approves a user for verification (accepts their identity documents).
+
+**Request Body:**
+```json
+{
+  "userId": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "status": "Verified",
+  "verificationDate": "2024-01-20",
+  "approvedBy": "admin@example.com",
+  "message": "User approved successfully"
+}
+```
+
+---
+
+#### 5. Reject User
+**Endpoint:** `POST /api/admin/reject-user`
+
+**Description:** Admin rejects a user's verification and starts a chat explaining the reason.
+
+**Request Body:**
+```json
+{
+  "userId": 1,
+  "rejectionReason": "Your documents are not clear. Please provide clear copies with valid ID."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "status": "Rejected",
+  "rejectionReason": "Your documents are not clear. Please provide clear copies with valid ID.",
+  "rejectionDate": "2024-01-20",
+  "message": "User rejected and notification sent"
+}
+```
+
+---
+
+#### 6. Suspend User
+**Endpoint:** `POST /api/admin/suspend-user/{userId}`
+
+**Description:** Suspends a user's account, preventing them from listings and offers.
+
+**Path Parameters:**
+- `userId` (long, required): User ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "User suspended successfully"
+}
+```
+
+---
+
+#### 7. Assign Listing Codes
+**Endpoint:** `POST /api/admin/assign-listing-codes`
+
+**Description:** Admin assigns listing codes to a user, allowing them to create that many listings.
+
+**Request Body:**
+```json
+{
+  "userId": 1,
+  "count": 5
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing codes assigned successfully"
+}
+```
+
+---
+
+#### 8. Upload ID Document
+**Endpoint:** `POST /api/admin/upload-id-document`
+
+**Description:** Admin uploads and stores a user's identity document.
+
+**Form Data:**
+- `userId` (long, required): User ID
+- `document` (file, required): ID document (PDF, JPG, PNG)
+- `identityNumber` (string, required): ID/Passport number
+- `identityExpiryDate` (DateTime, required): Document expiry date
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Document uploaded successfully",
+  "data": {
+    "userId": 1,
+    "documentUrl": "fileStorageUrl",
+    "identityNumber": "123456789",
+    "identityExpiryDate": "2025-12-31",
+    "uploadDate": "2024-01-20"
+  }
+}
+```
+
+---
+
+#### 9. Get User for Verification
+**Endpoint:** `GET /api/admin/user-verification/{userId}`
+
+**Description:** Retrieves user verification details including uploaded documents.
+
+**Path Parameters:**
+- `userId` (long, required): User ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phoneNumber": "+1234567890",
+  "status": "PendingVerification",
+  "documentUrl": "fileStorageUrl",
+  "identityNumber": "123456789",
+  "identityExpiryDate": "2025-12-31",
+  "documentUploadDate": "2024-01-19",
+  "registrationDate": "2024-01-15"
+}
+```
+
+---
+
+#### 10. Get Pending Verifications
+**Endpoint:** `GET /api/admin/pending-verifications`
+
+**Description:** Retrieves all users awaiting identity verification.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "fullName": "John Doe",
+      "documentUrl": "fileStorageUrl",
+      "identityNumber": "123456789",
+      "documentUploadDate": "2024-01-19",
+      "status": "PendingVerification"
+    }
+  ]
+}
+```
+
+---
+
+## Super Admin Endpoints
+
+### Base Path: `/api/superadmin`
+
+**Authentication:** Required (Role: SuperAdmin)
+
+#### 1. Create Admin
+**Endpoint:** `POST /api/superadmin/create-admin`
+
+**Description:** SuperAdmin creates a new admin account.
+
+**Request Body:**
+```json
+{
+  "email": "newadmin@example.com",
+  "password": "securePassword123",
+  "fullName": "Jane Admin"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 2,
+  "email": "newadmin@example.com",
+  "fullName": "Jane Admin",
+  "role": "Admin",
+  "createdDate": "2024-01-20",
+  "message": "Admin created successfully"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to create admin. Email may already exist."
+}
+```
+
+---
+
+#### 2. Get All Admins
+**Endpoint:** `GET /api/superadmin/admins`
+
+**Description:** Retrieves all admin accounts.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "admin1@example.com",
+      "fullName": "Admin One",
+      "role": "Admin",
+      "createdDate": "2024-01-01",
+      "lastActiveDate": "2024-01-20",
+      "totalApprovals": 150
+    },
+    {
+      "id": 2,
+      "email": "admin2@example.com",
+      "fullName": "Admin Two",
+      "role": "Admin",
+      "createdDate": "2024-01-15",
+      "lastActiveDate": "2024-01-20",
+      "totalApprovals": 45
+    }
+  ]
+}
+```
+
+---
+
+#### 3. Get Admin Details
+**Endpoint:** `GET /api/superadmin/admin/{adminId}`
+
+**Description:** Retrieves details of a specific admin.
+
+**Path Parameters:**
+- `adminId` (long, required): Admin ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "email": "admin@example.com",
+  "fullName": "Admin One",
+  "role": "Admin",
+  "createdDate": "2024-01-01",
+  "lastActiveDate": "2024-01-20",
+  "totalApprovals": 150,
+  "totalRejections": 20,
+  "totalSuspensions": 5
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "Admin not found"
+}
+```
+
+---
+
+#### 4. Remove Admin
+**Endpoint:** `DELETE /api/superadmin/remove-admin/{adminId}`
+
+**Description:** SuperAdmin removes an admin account.
+
+**Path Parameters:**
+- `adminId` (long, required): Admin ID
+
+**Response (200 OK):**
+```json
+{
+  "message": "Admin removed successfully"
+}
+```
+
+---
+
+## Dashboard Endpoints
+
+### Base Path: `/api/dashboard`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+#### 1. Get Dashboard Statistics
+**Endpoint:** `GET /api/dashboard/statistics`
+
+**Description:** Retrieves dashboard statistics for admin overview.
+
+**Response (200 OK):**
+```json
+{
+  "totalUsers": 1250,
+  "totalListings": 850,
+  "totalOffers": 3400,
+  "totalReports": 45,
+  "pendingApprovals": 12,
+  "activeListings": 650,
+  "suspendedUsers": 8,
+  "newUsersThisMonth": 120,
+  "successfulTransactions": 320,
+  "platformRevenue": 15000
+}
+```
+
+---
+
+#### 2. Get System Statistics
+**Endpoint:** `GET /api/dashboard/system-statistics`
+
+**Description:** Retrieves detailed system-wide statistics including trends.
+
+**Response (200 OK):**
+```json
+{
+  "totalSystemUsers": 1250,
+  "verifiedUsers": 980,
+  "pendingVerificationUsers": 60,
+  "suspendedUsers": 8,
+  "totalListingsCreated": 2100,
+  "activeListings": 650,
+  "soldListings": 800,
+  "rejectedListings": 45,
+  "totalOffers": 5200,
+  "acceptedOffers": 320,
+  "rejectedOffers": 2100,
+  "userReports": {
+    "total": 45,
+    "pending": 8,
+    "resolved": 35,
+    "dismissed": 2
+  },
+  "topListingCities": [
+    { "city": "New York", "count": 125 },
+    { "city": "Los Angeles", "count": 98 },
+    { "city": "Chicago", "count": 87 }
+  ],
+  "averageOfferAcceptanceRate": 6.15,
+  "lastUpdated": "2024-01-20T15:30:00"
+}
+```
+
+---
+
+## Configuration Endpoints
+
+### Base Path: `/api/configuration`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+#### 1. Get All Configurations
+**Endpoint:** `GET /api/configuration`
+
+**Description:** Retrieves all system configurations.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "key": "MAX_LISTING_PRICE",
+      "value": "999999",
+      "valueType": "Decimal",
+      "description": "Maximum price allowed for a car listing"
+    },
+    {
+      "key": "MIN_LISTING_PRICE",
+      "value": "500",
+      "valueType": "Decimal",
+      "description": "Minimum price allowed for a car listing"
+    },
+    {
+      "key": "MAX_OFFER_DISCOUNT",
+      "value": "50",
+      "valueType": "Decimal",
+      "description": "Maximum discount percentage allowed for offers"
+    },
+    {
+      "key": "LISTING_APPROVAL_TIMEOUT_DAYS",
+      "value": "7",
+      "valueType": "Integer",
+      "description": "Days before a listing requires re-approval"
+    }
+  ]
+}
+```
+
+---
+
+#### 2. Get Configuration
+**Endpoint:** `GET /api/configuration/{configKey}`
+
+**Description:** Retrieves a specific configuration value.
+
+**Path Parameters:**
+- `configKey` (string, required): Configuration key (e.g., "MAX_LISTING_PRICE")
+
+**Response (200 OK):**
+```json
+{
+  "key": "MAX_LISTING_PRICE",
+  "value": "999999",
+  "valueType": "Decimal",
+  "description": "Maximum price allowed for a car listing"
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "message": "Configuration not found"
+}
+```
+
+---
+
+#### 3. Update Configuration
+**Endpoint:** `PUT /api/configuration/{configKey}`
+
+**Description:** Updates a system configuration value.
+
+**Path Parameters:**
+- `configKey` (string, required): Configuration key
+
+**Request Body:**
+```json
+{
+  "value": "1500000",
+  "description": "Updated maximum price for listings"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "key": "MAX_LISTING_PRICE",
+  "value": "1500000",
+  "valueType": "Decimal",
+  "description": "Updated maximum price for listings",
+  "lastUpdatedDate": "2024-01-20"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to update configuration"
+}
+```
+
+---
+
+## Listing Codes Endpoints
+
+### Base Path: `/api/listingcodes`
+
+**Authentication:** Required (Roles: Admin, SuperAdmin)
+
+#### 1. Generate Codes
+**Endpoint:** `POST /api/listingcodes/generate`
+
+**Description:** Generates new listing codes that can be assigned to users.
+
+**Request Body:**
+```json
+{
+  "count": 100
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Listing codes generated successfully",
+  "count": 100
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Failed to generate listing codes"
+}
+```
+
+---
+
+#### 2. Get Unused Codes
+**Endpoint:** `GET /api/listingcodes/unused`
+
+**Description:** Retrieves all unused listing codes.
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "code": "CB-2024-0001",
+      "status": "Unused",
+      "createdDate": "2024-01-20",
+      "expiryDate": null
+    },
+    {
+      "id": 2,
+      "code": "CB-2024-0002",
+      "status": "Unused",
+      "createdDate": "2024-01-20",
+      "expiryDate": null
+    }
+  ]
+}
+```
+
+---
+
+#### 3. Get All Codes
+**Endpoint:** `GET /api/listingcodes/all`
+
+**Description:** Retrieves all listing codes (used and unused).
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "code": "CB-2024-0001",
+      "status": "Unused",
+      "createdDate": "2024-01-20",
+      "assignedDate": null,
+      "usedDate": null
+    },
+    {
+      "id": 2,
+      "code": "CB-2024-0002",
+      "status": "Used",
+      "createdDate": "2024-01-20",
+      "assignedDate": "2024-01-15",
+      "usedDate": "2024-01-18",
+      "assignedToUser": "user@example.com",
+      "usedForListing": "2020 Toyota Camry"
+    }
+  ]
+}
+```
+
+---
+
+#### 4. Validate and Use Code
+**Endpoint:** `POST /api/listingcodes/validate/{code}`
+
+**Description:** Validates a listing code and marks it as used for a specific listing.
+
+**Path Parameters:**
+- `code` (string, required): Listing code (e.g., "CB-2024-0001")
+
+**Request Body:**
+```json
+{
+  "listingId": 5
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Code validated and used successfully"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "message": "Invalid or already used code"
+}
+```
+
+---
+
+## Error Handling
+
+All endpoints follow a consistent error handling pattern. Here are common error responses:
+
+### 400 Bad Request
+```json
+{
+  "success": false,
+  "message": "Invalid input or business logic error",
+  "errors": {
+    "fieldName": "Error description"
+  }
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "success": false,
+  "message": "Authentication required or token invalid"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "success": false,
+  "message": "Insufficient permissions for this action"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "success": false,
+  "message": "Resource not found"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "success": false,
+  "message": "An unexpected error occurred. Please try again later."
+}
+```
+
+---
+
+## Authentication & Authorization
+
+### Authentication Methods
+- **Bearer Token (JWT):** All protected endpoints require a JWT token in the Authorization header
+  ```
+  Authorization: Bearer <accessToken>
+  ```
+
+### User Roles
+1. **User:** Standard car seller/buyer
+2. **Admin:** Can approve listings, verify users, manage reports, assign listing codes
+3. **SuperAdmin:** Full system access, can create/remove admins, manage all configurations
+
+### Token Refresh
+When access token expires, use the `refresh-token` endpoint to get a new token using your refresh token.
+
+---
+
+## Best Practices for Frontend Development
+
+### Authentication Flow
+1. User registers via `/api/auth/register`
+2. User receives email with verification link
+3. User verifies email via `/api/auth/verify-email`
+4. User logs in via `/api/auth/login` and receives tokens
+5. Use access token for subsequent requests
+6. Refresh token when access token expires
+
+### Data Pagination
+- Implement pagination for list endpoints (e.g., car listings search)
+- Use `pageNumber` and `pageSize` query parameters
+
+### File Uploads
+- When uploading files (ID documents, sale proof, etc.), use multipart/form-data
+- Validate file types on frontend before sending
+
+### Real-time Chat
+- Consider implementing WebSocket for real-time chat messaging
+- Poll `/api/chats/my-chats` periodically to check for new messages
+
+### Error Handling
+- Always check `success` flag in responses
+- Display user-friendly error messages from the `message` field
+- Handle token expiration and redirect to login when necessary
+
+---
+
+## Rate Limiting & Performance
+
+- API endpoints are designed to handle reasonable request volumes
+- Implement pagination for list endpoints to avoid large data transfers
+- Cache static data where appropriate on the frontend
+
+---
+
+## Version Information
+
+- **API Version:** 1.0
+- **.NET Version:** .NET 10
+- **Last Updated:** January 20, 2024

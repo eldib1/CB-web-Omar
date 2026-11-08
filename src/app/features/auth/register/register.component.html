@@ -1,0 +1,170 @@
+<div class="min-vh-100 bg-dark d-flex align-items-center py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+
+        <!-- Logo -->
+        <div class="text-center mb-4">
+          <a routerLink="/" class="text-decoration-none">
+            <i class="bi bi-car-front-fill text-warning fs-1"></i>
+            <h1 class="text-warning fw-bold fs-3 mt-2">ClutchBids</h1>
+          </a>
+          <p class="text-secondary">Create your account to start buying & selling</p>
+        </div>
+
+        <div class="card bg-dark border border-secondary shadow-lg">
+          <div class="card-body p-4">
+
+            @if (success()) {
+              <!-- Success State -->
+              <div class="text-center py-4">
+                <i class="bi bi-envelope-check-fill text-warning fs-1 d-block mb-3"></i>
+                <h4 class="text-white fw-bold">Verify Your Email</h4>
+                <p class="text-secondary">
+                  We've sent a verification link to <strong class="text-warning">{{ registeredEmail() }}</strong>.
+                  Please check your inbox and click the link to activate your account.
+                </p>
+                <p class="text-secondary small">
+                  After email verification, our team will review your identity documents.
+                  You'll be notified once your account is approved.
+                </p>
+                <a routerLink="/auth/login" class="btn btn-warning fw-semibold mt-2">
+                  Go to Login
+                </a>
+              </div>
+            } @else {
+              <h4 class="text-white fw-bold mb-4">Create Account</h4>
+              <form [formGroup]="form" (ngSubmit)="submit()">
+
+                <!-- Full Name -->
+                <div class="mb-3">
+                  <label class="form-label text-light small">Full Name *</label>
+                  <input
+                    type="text"
+                    class="form-control bg-dark text-light border-secondary"
+                    [class.is-invalid]="f['fullName'].invalid && f['fullName'].touched"
+                    formControlName="fullName"
+                    placeholder="John Doe"
+                  />
+                  @if (f['fullName'].errors?.['required'] && f['fullName'].touched) {
+                    <div class="invalid-feedback">Full name is required.</div>
+                  }
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                  <label class="form-label text-light small">Email Address *</label>
+                  <input
+                    type="email"
+                    class="form-control bg-dark text-light border-secondary"
+                    [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                    formControlName="email"
+                    placeholder="you@example.com"
+                  />
+                  @if (f['email'].errors?.['required'] && f['email'].touched) {
+                    <div class="invalid-feedback">Email is required.</div>
+                  }
+                  @if (f['email'].errors?.['email'] && f['email'].touched) {
+                    <div class="invalid-feedback">Please enter a valid email.</div>
+                  }
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+                  <label class="form-label text-light small">Phone Number *</label>
+                  <input
+                    type="tel"
+                    class="form-control bg-dark text-light border-secondary"
+                    [class.is-invalid]="f['phoneNumber'].invalid && f['phoneNumber'].touched"
+                    formControlName="phoneNumber"
+                    placeholder="+61 4xx xxx xxx"
+                  />
+                  @if (f['phoneNumber'].errors?.['required'] && f['phoneNumber'].touched) {
+                    <div class="invalid-feedback">Phone number is required.</div>
+                  }
+                  @if (f['phoneNumber'].errors?.['invalidAuPhone'] && f['phoneNumber'].touched) {
+                    <div class="invalid-feedback">Please enter a valid Australian phone number.</div>
+                  }
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                  <label class="form-label text-light small">Password *</label>
+                  <input
+                    type="password"
+                    class="form-control bg-dark text-light border-secondary"
+                    [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                    formControlName="password"
+                    placeholder="Min 8 chars, upper, lower & number"
+                  />
+                  @if (f['password'].errors?.['passwordStrength'] && f['password'].touched) {
+                    <div class="invalid-feedback">
+                      Password must be at least 8 characters with upper, lower case and a number.
+                    </div>
+                  }
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                  <label class="form-label text-light small">Confirm Password *</label>
+                  <input
+                    type="password"
+                    class="form-control bg-dark text-light border-secondary"
+                    [class.is-invalid]="(form.errors?.['passwordMismatch'] || f['confirmPassword'].invalid) && f['confirmPassword'].touched"
+                    formControlName="confirmPassword"
+                    placeholder="Repeat your password"
+                  />
+                  @if (form.errors?.['passwordMismatch'] && f['confirmPassword'].touched) {
+                    <div class="invalid-feedback">Passwords do not match.</div>
+                  }
+                </div>
+
+                <!-- Terms -->
+                <div class="mb-4 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [class.is-invalid]="f['agreeTerms'].invalid && f['agreeTerms'].touched"
+                    formControlName="agreeTerms"
+                    id="agreeTerms"
+                  />
+                  <label class="form-check-label text-secondary small" for="agreeTerms">
+                    I agree to the
+                    <a routerLink="/terms" class="text-warning">Terms & Conditions</a>
+                    and
+                    <a routerLink="/privacy" class="text-warning">Privacy Policy</a>
+                  </label>
+                  @if (f['agreeTerms'].invalid && f['agreeTerms'].touched) {
+                    <div class="invalid-feedback d-block">You must agree to continue.</div>
+                  }
+                </div>
+
+                <!-- Note -->
+                <div class="alert alert-warning alert-sm small py-2 px-3 mb-3">
+                  <i class="bi bi-info-circle me-1"></i>
+                  After registration, you'll need to verify your email. An admin will then review your identity documents before your account is activated.
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-warning w-100 fw-semibold"
+                  [disabled]="loading()"
+                >
+                  @if (loading()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  Create Account
+                </button>
+              </form>
+
+              <p class="text-secondary text-center small mt-3 mb-0">
+                Already have an account?
+                <a routerLink="/auth/login" class="text-warning">Sign in</a>
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

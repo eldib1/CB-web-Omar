@@ -1,0 +1,38 @@
+<section class="bg-dark text-white py-5">
+  <div class="container text-center py-3">
+    <h1 class="display-5 fw-bold">Frequently Asked <span class="text-warning">Questions</span></h1>
+    <p class="lead text-white-50 mt-2">Everything you need to know about ClutchBids.</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container" style="max-width:760px">
+    <div class="accordion accordion-flush" id="faqAccordion">
+      @for (item of faqs(); track $index) {
+        <div class="accordion-item border rounded mb-2 shadow-sm">
+          <h2 class="accordion-header">
+            <button class="accordion-button fw-semibold"
+              [class.collapsed]="!item.open"
+              [attr.aria-expanded]="item.open"
+              type="button"
+              (click)="toggle($index)">
+              {{ item.q }}
+            </button>
+          </h2>
+          @if (item.open) {
+            <div class="accordion-collapse">
+              <div class="accordion-body text-muted">{{ item.a }}</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="text-center mt-5">
+      <p class="text-muted">Still have questions?</p>
+      <a routerLink="/chat" class="btn btn-warning">
+        <i class="bi bi-chat-dots me-1"></i>Chat with Support
+      </a>
+    </div>
+  </div>
+</section>

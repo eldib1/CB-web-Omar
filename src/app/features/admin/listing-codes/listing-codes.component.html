@@ -1,0 +1,67 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-upc-scan me-2 text-warning"></i>Listing Codes</h4>
+
+    <!-- Generate Codes -->
+    <form class="d-flex align-items-center gap-2" [formGroup]="generateForm" (ngSubmit)="generateCodes()">
+      <input type="number" class="form-control form-control-sm" style="width:80px" formControlName="count" min="1" max="100" placeholder="Count" />
+      <button type="submit" class="btn btn-warning btn-sm" [disabled]="generating() || generateForm.invalid">
+        @if (generating()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+        <i class="bi bi-plus-circle me-1"></i>Generate
+      </button>
+    </form>
+  </div>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+        All Codes <span class="badge bg-secondary ms-1">{{ totalCount() }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'unused'" (click)="setTab('unused')">
+        Unused Only
+      </button>
+    </li>
+  </ul>
+
+  @if (loading()) { <cb-loading-spinner /> }
+  @else {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle font-monospace">
+        <thead class="table-dark">
+          <tr>
+            <th>Code</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+            <th>Used For Listing</th>
+            <th>Created</th>
+            <th>Used Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (code of codes(); track code.id) {
+            <tr>
+              <td>
+                <span class="badge bg-dark text-warning fs-6 user-select-all">{{ code.code }}</span>
+              </td>
+              <td><cb-status-badge [status]="code.status" type="code" /></td>
+              <td class="small text-muted">{{ code.assignedToUser || '—' }}</td>
+              <td class="small">
+                @if (code.usedForListing) {
+                  <span class="text-muted">{{ code.usedForListing }}</span>
+                } @else { <span class="text-muted">—</span> }
+              </td>
+              <td class="small text-muted">{{ code.createdDate | date:'mediumDate' }}</td>
+              <td class="small text-muted">{{ code.usedDate ? (code.usedDate | date:'mediumDate') : '—' }}</td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="6" class="text-center text-muted py-4">No codes found.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <cb-pagination [currentPage]="page()" [totalCount]="totalCount()" [pageSize]="pageSize" (pageChange)="onPageChange($event)" />
+  }
+</div>

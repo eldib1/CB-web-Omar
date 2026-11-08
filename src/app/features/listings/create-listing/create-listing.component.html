@@ -1,0 +1,200 @@
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/listings" class="text-warning text-decoration-none">Listings</a></li>
+      <li class="breadcrumb-item active text-muted">Create New Listing</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-9">
+      <div class="card border-0 shadow">
+        <div class="card-header bg-dark text-white d-flex align-items-center gap-2">
+          <i class="bi bi-plus-circle-fill text-warning fs-5"></i>
+          <span class="fw-bold fs-5">List Your Car</span>
+        </div>
+        <div class="card-body p-4">
+          <form [formGroup]="form" (ngSubmit)="submit()">
+
+            <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Vehicle Information</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Listing Title *</label>
+                <input type="text" class="form-control" [class.is-invalid]="f['title'].invalid && f['title'].touched" formControlName="title" placeholder="e.g. 2021 Toyota Camry Hybrid – Excellent Condition" />
+                <div class="invalid-feedback">Title is required (min 5 chars).</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Make *</label>
+                <input type="text" class="form-control" [class.is-invalid]="f['make'].invalid && f['make'].touched" formControlName="make" placeholder="Toyota" />
+                <div class="invalid-feedback">Required.</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Model *</label>
+                <input type="text" class="form-control" [class.is-invalid]="f['model'].invalid && f['model'].touched" formControlName="model" placeholder="Camry" />
+                <div class="invalid-feedback">Required.</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Year *</label>
+                <select class="form-select" formControlName="year">
+                  @for (y of years(); track y) {
+                    <option [value]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">VIN (Optional)</label>
+                <input type="text" class="form-control" formControlName="vin" placeholder="VIN123456" />
+              </div>
+            </div>
+
+            <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Pricing & Location</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-4">
+                <label class="form-label fw-semibold small">Asking Price (AUD) *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" [class.is-invalid]="f['price'].invalid && f['price'].touched" formControlName="price" placeholder="15000" />
+                  <div class="invalid-feedback">Valid price required (min $500).</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <label class="form-label fw-semibold small">Mileage (km) *</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" [class.is-invalid]="f['mileage'].invalid && f['mileage'].touched" formControlName="mileage" placeholder="45000" />
+                  <span class="input-group-text">km</span>
+                  <div class="invalid-feedback">Valid mileage required.</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold small">Location *</label>
+                <input type="text" class="form-control" [class.is-invalid]="f['location'].invalid && f['location'].touched" formControlName="location" placeholder="Sydney, NSW" />
+                <div class="invalid-feedback">Location is required.</div>
+              </div>
+            </div>
+
+            <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Vehicle Specs</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Transmission *</label>
+                <select class="form-select" formControlName="transmission">
+                  <option value="Automatic">Automatic</option>
+                  <option value="Manual">Manual</option>
+                  <option value="CVT">CVT</option>
+                  <option value="Semi-Automatic">Semi-Automatic</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Fuel Type *</label>
+                <select class="form-select" formControlName="fuelType">
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="Electric">Electric</option>
+                  <option value="LPG">LPG</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Body Type *</label>
+                <select class="form-select" formControlName="bodyType">
+                  <option value="Sedan">Sedan</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Hatchback">Hatchback</option>
+                  <option value="Ute">Ute</option>
+                  <option value="Wagon">Wagon</option>
+                  <option value="Coupe">Coupe</option>
+                  <option value="Convertible">Convertible</option>
+                  <option value="Van">Van</option>
+                  <option value="Truck">Truck</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Exterior Color *</label>
+                <input type="text" class="form-control" [class.is-invalid]="f['color'].invalid && f['color'].touched" formControlName="color" placeholder="Silver" />
+                <div class="invalid-feedback">Required.</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-semibold small">Interior Color</label>
+                <input type="text" class="form-control" formControlName="interiorColor" placeholder="Black" />
+              </div>
+            </div>
+
+            <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Description</h6>
+            <div class="mb-4">
+              <textarea
+                class="form-control"
+                rows="5"
+                [class.is-invalid]="f['description'].invalid && f['description'].touched"
+                formControlName="description"
+                placeholder="Describe your vehicle in detail - service history, condition, modifications, reason for selling..."
+              ></textarea>
+              @if (f['description'].errors?.['minlength'] && f['description'].touched) {
+                <div class="invalid-feedback">Description must be at least 20 characters.</div>
+              }
+            </div>
+
+            <!-- Listing Code -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold small">Listing Code (if required)</label>
+              <input type="text" class="form-control" formControlName="listingCode" placeholder="CB-2024-XXXX" />
+              <div class="form-text">Contact support if you need a listing code.</div>
+            </div>
+
+            <h6 class="fw-bold border-bottom pb-2 mb-3 text-dark">Media Upload</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Photos * <span class="text-muted">(min 1, max 15)</span></label>
+                <cb-file-upload
+                  label="Upload Vehicle Photos"
+                  hint="Drag & drop or click to browse. JPG, PNG up to 10MB each."
+                  accept="image/jpeg,image/png,image/webp"
+                  [multiple]="true"
+                  [maxFiles]="15"
+                  icon="bi-images"
+                  (filesSelected)="images.set($event)"
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Documents * <span class="text-muted">(registration, service history, etc.)</span></label>
+                <cb-file-upload
+                  label="Upload Vehicle Documents"
+                  hint="PDF, JPG, PNG up to 10MB each."
+                  accept="application/pdf,image/jpeg,image/png"
+                  [multiple]="true"
+                  [maxFiles]="5"
+                  icon="bi-file-earmark-text"
+                  (filesSelected)="documents.set($event)"
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Videos <span class="text-muted">(optional, max 3)</span></label>
+                <cb-file-upload
+                  label="Upload Videos"
+                  hint="MP4, MOV up to 50MB each."
+                  accept="video/mp4,video/quicktime"
+                  [multiple]="true"
+                  [maxFiles]="3"
+                  [maxSizeMb]="50"
+                  icon="bi-camera-video"
+                  (filesSelected)="videos.set($event)"
+                />
+              </div>
+            </div>
+
+            <div class="alert alert-warning small py-2 px-3">
+              <i class="bi bi-info-circle me-2"></i>
+              Your listing will be reviewed by our team before it becomes visible. This usually takes 1-2 business days.
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end mt-3">
+              <a routerLink="/listings" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-warning fw-semibold px-4" [disabled]="loading()">
+                @if (loading()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                <i class="bi bi-send me-1"></i>Submit for Approval
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

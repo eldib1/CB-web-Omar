@@ -1,0 +1,110 @@
+<div class="container-fluid py-4">
+  <h4 class="fw-bold mb-4"><i class="bi bi-card-list me-2 text-warning"></i>Listing Management</h4>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All Listings</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">Pending Approval</button>
+    </li>
+  </ul>
+
+  @if (activeTab() === 'all') {
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <input type="text" class="form-control" placeholder="Search listings..."
+          [value]="searchText()" (input)="searchText.set($any($event.target).value); page.set(1); loadListings()" />
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value); page.set(1); loadListings()">
+          <option value="">All Statuses</option>
+          <option value="Active">Active</option>
+          <option value="PendingApproval">Pending Approval</option>
+          <option value="Draft">Draft</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Sold">Sold</option>
+          <option value="Deactivated">Deactivated</option>
+        </select>
+      </div>
+    </div>
+  }
+
+  @if (loading()) { <cb-loading-spinner /> }
+  @else {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Listing</th>
+            <th>Price</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (listing of listings(); track listing.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/listings', listing.id]" class="text-decoration-none fw-semibold text-dark">
+                  {{ listing.year }} {{ listing.make }} {{ listing.model }}
+                </a>
+                <div class="small text-muted">{{ listing.title }}</div>
+              </td>
+              <td class="fw-semibold text-success">{{ listing.price | auCurrency }}</td>
+              <td class="small text-muted">{{ listing.location }}</td>
+              <td><cb-status-badge [status]="listing.status" type="listing" /></td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a [routerLink]="['/listings', listing.id]" class="btn btn-outline-info" title="View">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <button class="btn btn-outline-success" (click)="approve(listing.id)" title="Approve">
+                    <i class="bi bi-check-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="openRejectModal(listing.id)"
+                    data-bs-toggle="modal" data-bs-target="#rejectModal" title="Reject">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-warning" (click)="deactivate(listing.id)" title="Deactivate">
+                    <i class="bi bi-slash-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="markSold(listing.id)" title="Mark Sold">
+                    <i class="bi bi-bag-check"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="5" class="text-center text-muted py-4">No listings found.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <cb-pagination [currentPage]="page()" [totalCount]="totalCount()" [pageSize]="pageSize" (pageChange)="onPageChange($event)" />
+  }
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Reject Listing</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form [formGroup]="rejectForm">
+          <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="3" formControlName="reason" placeholder="Explain why this listing is being rejected..."></textarea>
+          @if (rejectForm.get('reason')?.invalid && rejectForm.get('reason')?.touched) {
+            <div class="invalid-feedback d-block">Reason is required.</div>
+          }
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="submitReject()" data-bs-dismiss="modal" [disabled]="rejectForm.invalid">Reject Listing</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

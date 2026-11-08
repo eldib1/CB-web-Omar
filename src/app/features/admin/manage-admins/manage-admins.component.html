@@ -1,0 +1,126 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill me-2 text-warning"></i>Manage Admins</h4>
+    <button class="btn btn-warning" (click)="openCreateModal()" data-bs-toggle="modal" data-bs-target="#createAdminModal">
+      <i class="bi bi-plus-circle me-1"></i>Add Admin
+    </button>
+  </div>
+
+  @if (loading()) { <cb-loading-spinner /> }
+  @else {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Admin</th>
+            <th>Email</th>
+            <th>Approvals</th>
+            <th>Rejections</th>
+            <th>Suspensions</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (admin of admins(); track admin.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle bg-warning text-dark">{{ admin.fullName[0] }}</div>
+                  <span class="fw-semibold">{{ admin.fullName }}</span>
+                </div>
+              </td>
+              <td class="small text-muted">{{ admin.email }}</td>
+              <td><span class="badge bg-success">{{ admin.totalApprovals }}</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td class="small text-muted">{{ admin.createdDate | date:'mediumDate' }}</td>
+              <td>
+                <button class="btn btn-outline-danger btn-sm" (click)="openRemoveModal(admin)" data-bs-toggle="modal" data-bs-target="#removeAdminModal">
+                  <i class="bi bi-person-dash me-1"></i>Remove
+                </button>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="7" class="text-center text-muted py-4">No admins found.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Create Admin Modal -->
+<div class="modal fade" id="createAdminModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Create Admin</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="createForm">
+          <div class="mb-3">
+            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="fullName" [class.is-invalid]="hasError('fullName','required') || hasError('fullName','minlength')" />
+            @if (hasError('fullName', 'required')) { <div class="invalid-feedback">Full name is required.</div> }
+            @if (hasError('fullName', 'minlength')) { <div class="invalid-feedback">Minimum 3 characters.</div> }
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" formControlName="email" [class.is-invalid]="hasError('email','required') || hasError('email','email')" />
+            @if (hasError('email', 'required')) { <div class="invalid-feedback">Email is required.</div> }
+            @if (hasError('email', 'email')) { <div class="invalid-feedback">Enter a valid email.</div> }
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input [type]="showPassword() ? 'text' : 'password'" class="form-control" formControlName="password"
+                [class.is-invalid]="hasError('password','required') || hasError('password','minlength') || hasError('password','passwordStrength')" />
+              <button class="btn btn-outline-secondary" type="button" (click)="showPassword.set(!showPassword())">
+                <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()"></i>
+              </button>
+            </div>
+            @if (hasError('password','required')) { <div class="text-danger small mt-1">Password is required.</div> }
+            @if (hasError('password','passwordStrength')) { <div class="text-danger small mt-1">Must contain uppercase, lowercase, number, and special character.</div> }
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" formControlName="confirmPassword"
+              [class.is-invalid]="createForm.hasError('passwordMismatch') && createForm.get('confirmPassword')?.touched" />
+            @if (createForm.hasError('passwordMismatch') && createForm.get('confirmPassword')?.touched) {
+              <div class="invalid-feedback d-block">Passwords do not match.</div>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-warning" (click)="submitCreate()" data-bs-dismiss="modal" [disabled]="creating()">
+          @if (creating()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Create Admin
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Admin Modal -->
+<div class="modal fade" id="removeAdminModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Remove Admin</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        @if (adminToRemove(); as a) {
+          <p>Are you sure you want to remove <strong>{{ a.fullName }}</strong> ({{ a.email }}) from the admin role?</p>
+          <p class="text-muted small">This action cannot be undone.</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="confirmRemove()" data-bs-dismiss="modal">Remove Admin</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

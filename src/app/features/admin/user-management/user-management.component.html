@@ -1,0 +1,297 @@
+<div class="container-fluid py-4">
+  <h4 class="fw-bold mb-4"><i class="bi bi-people-fill me-2 text-warning"></i>User Management</h4>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+        All Users <span class="badge bg-secondary ms-1">{{ allUsersTotal }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
+        Pending Verifications <span class="badge bg-warning text-dark ms-1">{{ pendingTotal }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'reports'" (click)="setTab('reports')">
+        Reports <span class="badge bg-danger ms-1">{{ reportsTotal }}</span>
+      </button>
+    </li>
+  </ul>
+
+  @if (loading()) { <cb-loading-spinner /> }
+
+  <!-- All Users Tab -->
+  @if (activeTab() === 'all' && !loading()) {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Registered</th>
+            <th>Listings</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of allUsers(); track user.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle">{{ user.fullName[0] }}</div>
+                  <span class="fw-semibold">{{ user.fullName }}</span>
+                </div>
+              </td>
+              <td class="text-muted small">{{ user.email }}</td>
+              <td><cb-status-badge [status]="user.status" type="user" /></td>
+              <td class="small text-muted">{{ user.registrationDate | date:'mediumDate' }}</td>
+              <td class="small">{{ user.totalListings }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" (click)="viewVerification(user.id)" data-bs-toggle="modal" data-bs-target="#verificationModal" title="View verification">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-success" (click)="approveUser(user.id)" title="Approve">
+                    <i class="bi bi-check-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="openRejectModal(user.id)" data-bs-toggle="modal" data-bs-target="#rejectModal" title="Reject">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-warning" (click)="openSuspendModal(user.id)" data-bs-toggle="modal" data-bs-target="#suspendModal" title="Suspend">
+                    <i class="bi bi-slash-circle"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="openCodesModal(user.id)" data-bs-toggle="modal" data-bs-target="#codesModal" title="Assign codes">
+                    <i class="bi bi-upc-scan"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="6" class="text-center text-muted py-4">No users found.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Pending Verifications Tab -->
+  @if (activeTab() === 'pending' && !loading()) {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr><th>Name</th><th>Email</th><th>Registered</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (user of pendingVers(); track user.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle">{{ user.fullName[0] }}</div>
+                  <span class="fw-semibold">{{ user.fullName }}</span>
+                </div>
+              </td>
+              <td class="text-muted small">{{ user.email }}</td>
+              <td class="small text-muted">{{ user.registrationDate | date:'mediumDate' }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" (click)="viewVerification(user.id)" data-bs-toggle="modal" data-bs-target="#verificationModal">
+                    <i class="bi bi-search me-1"></i>Review ID
+                  </button>
+                  <button class="btn btn-success" (click)="approveUser(user.id)">
+                    <i class="bi bi-check-circle me-1"></i>Approve
+                  </button>
+                  <button class="btn btn-danger" (click)="openRejectModal(user.id)" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle me-1"></i>Reject
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="4" class="text-center text-muted py-4">No pending verifications.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Reports Tab -->
+  @if (activeTab() === 'reports' && !loading()) {
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr><th>Reported User</th><th>Reported By</th><th>Reason</th><th>Date</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (report of reports(); track report.id) {
+            <tr>
+              <td class="fw-semibold">{{ report.reportedUserName }}</td>
+              <td class="text-muted small">{{ report.reporterName }}</td>
+              <td class="small">{{ report.reason }}</td>
+              <td class="small text-muted">{{ report.createdDate | date:'mediumDate' }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning" (click)="openReviewReportModal(report)" data-bs-toggle="modal" data-bs-target="#reviewReportModal">
+                  <i class="bi bi-clipboard2-check me-1"></i>Review
+                </button>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="5" class="text-center text-muted py-4">No pending reports.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Verification Modal -->
+<div class="modal fade" id="verificationModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">User Verification Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        @if (verificationLoading()) { <cb-loading-spinner message="Loading verification..." /> }
+        @else if (selectedVerification(); as v) {
+          <div class="row g-3">
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Full Name</p>
+              <p class="fw-semibold">{{ v.fullName }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Email</p>
+              <p>{{ v.email }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Phone</p>
+              <p>{{ v.phoneNumber || '&#8212;' }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Status</p>
+              <cb-status-badge [status]="v.status" type="user" />
+            </div>
+            @if (v.documentUrl) {
+              <div class="col-12">
+                <p class="text-muted small mb-1">ID Document</p>
+                <a [href]="v.documentUrl" target="_blank" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-file-earmark-image me-1"></i>View Document
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        @if (selectedVerification(); as v) {
+          <button class="btn btn-success" (click)="approveUser(v.id)" data-bs-dismiss="modal">Approve</button>
+          <button class="btn btn-danger" (click)="openRejectModal(v.id)" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#rejectModal">Reject</button>
+        }
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Reject User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form [formGroup]="rejectForm">
+          <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="3" formControlName="reason" placeholder="Explain why the user is being rejected..."></textarea>
+          @if (rejectForm.get('reason')?.invalid && rejectForm.get('reason')?.touched) {
+            <div class="invalid-feedback d-block">Reason is required.</div>
+          }
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="submitReject()" data-bs-dismiss="modal" [disabled]="rejectForm.invalid">Reject User</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Suspend User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="text-muted small">Suspending this user will prevent them from accessing their account.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-warning" (click)="submitSuspend()" data-bs-dismiss="modal">Suspend User</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Codes Modal -->
+<div class="modal fade" id="codesModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Assign Listing Codes</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <label class="form-label">Number of codes to assign</label>
+        <input type="number" class="form-control" min="1" max="50"
+          [value]="assignCodesCount()" (input)="assignCodesCount.set(+$any($event.target).value)" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="submitAssignCodes()" data-bs-dismiss="modal">Assign Codes</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Review Report Modal -->
+<div class="modal fade" id="reviewReportModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Review Report</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        @if (selectedReport(); as r) {
+          <div class="mb-3 p-3 bg-light rounded">
+            <p class="mb-1 small text-muted">Reported User</p>
+            <p class="fw-semibold mb-0">{{ r.reportedUserName }}</p>
+            <p class="mt-2 mb-1 small text-muted">Reason from reporter</p>
+            <p class="mb-0">{{ r.reason }}</p>
+          </div>
+        }
+        <form [formGroup]="reviewForm">
+          <div class="mb-3">
+            <label class="form-label">Action <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="action">
+              <option [value]="ReportAction.Warning">Warning</option>
+              <option [value]="ReportAction.Suspension">Suspension</option>
+              <option [value]="ReportAction.Ban">Ban</option>
+              <option [value]="ReportAction.NoAction">No Action</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Admin Notes <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="3" formControlName="notes" placeholder="Your review notes..."></textarea>
+            @if (reviewForm.get('notes')?.invalid && reviewForm.get('notes')?.touched) {
+              <div class="invalid-feedback d-block">Notes are required.</div>
+            }
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-warning" (click)="submitReviewReport()" data-bs-dismiss="modal" [disabled]="reviewForm.invalid">Submit Review</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="container-fluid py-4">
+  <h4 class="fw-bold mb-4"><i class="bi bi-gear-fill me-2 text-warning"></i>System Configurations</h4>
+
+  @if (loading()) { <cb-loading-spinner /> }
+  @else {
+    <div class="row g-3">
+      @for (config of configs(); track config.key) {
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="card border-0 shadow-sm h-100" [class.border-warning]="editingKey() === config.key">
+            <div class="card-header d-flex align-items-center justify-content-between bg-dark text-white">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi {{ getValueTypeIcon(config.valueType) }}"></i>
+                <span class="fw-semibold small">{{ config.key }}</span>
+              </div>
+              <span class="badge bg-secondary text-uppercase small">{{ config.valueType }}</span>
+            </div>
+            <div class="card-body">
+              @if (config.description) {
+                <p class="text-muted small mb-3">{{ config.description }}</p>
+              }
+
+              @if (editingKey() === config.key) {
+                <!-- Editing mode -->
+                @if (config.valueType?.toLowerCase() === 'boolean') {
+                  <select class="form-select mb-2" [value]="editValue()" (change)="editValue.set($any($event.target).value)">
+                    <option value="true">True (Enabled)</option>
+                    <option value="false">False (Disabled)</option>
+                  </select>
+                } @else if (config.valueType?.toLowerCase() === 'number') {
+                  <input type="number" class="form-control mb-2" [value]="editValue()"
+                    (input)="editValue.set($any($event.target).value)" />
+                } @else {
+                  <input type="text" class="form-control mb-2" [value]="editValue()"
+                    (input)="editValue.set($any($event.target).value)" />
+                }
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success btn-sm" (click)="saveConfig(config)" [disabled]="saving()">
+                    @if (saving()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Save
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                </div>
+              } @else {
+                <!-- View mode -->
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    @if (config.valueType?.toLowerCase() === 'boolean') {
+                      <span class="badge" [class.bg-success]="config.value === 'true'" [class.bg-danger]="config.value !== 'true'">
+                        {{ config.value === 'true' ? 'Enabled' : 'Disabled' }}
+                      </span>
+                    } @else {
+                      <span class="fw-semibold">{{ config.value }}</span>
+                    }
+                  </div>
+                  <button class="btn btn-outline-warning btn-sm" (click)="startEdit(config)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      @empty {
+        <div class="col-12 text-center text-muted py-5">No configurations found.</div>
+      }
+    </div>
+  }
+</div>

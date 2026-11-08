@@ -1,0 +1,306 @@
+@if (loading()) {
+  <cb-loading-spinner message="Loading listing..." />
+} @else if (listing(); as l) {
+  <div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/listings" class="text-warning text-decoration-none">Listings</a></li>
+        <li class="breadcrumb-item active text-muted">{{ l.title }}</li>
+      </ol>
+    </nav>
+
+    <div class="row g-4">
+      <!-- Media Gallery -->
+      <div class="col-12 col-lg-7">
+        <!-- Main Image -->
+        <div class="position-relative overflow-hidden rounded-3 shadow mb-3 bg-dark" style="height: 380px">
+          @if (l.images && l.images.length > 0) {
+            <img [src]="l.images[activeImageIndex()]" [alt]="l.title" class="w-100 h-100 object-fit-cover" />
+          } @else {
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-secondary">
+              <i class="bi bi-car-front fs-1"></i>
+            </div>
+          }
+          <div class="position-absolute top-0 start-0 m-2">
+            <cb-status-badge [status]="l.status" />
+          </div>
+        </div>
+
+        <!-- Thumbnails -->
+        @if (l.images && l.images.length > 1) {
+          <div class="d-flex gap-2 overflow-x-auto pb-1">
+            @for (img of l.images; track $index) {
+              <button
+                class="btn p-0 flex-shrink-0 rounded overflow-hidden border-2"
+                [class.border-warning]="activeImageIndex() === $index"
+                [class.border-transparent]="activeImageIndex() !== $index"
+                (click)="setActiveImage($index)"
+                style="width: 70px; height: 56px"
+              >
+                <img [src]="img" class="w-100 h-100 object-fit-cover" alt="" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Details Panel -->
+      <div class="col-12 col-lg-5">
+        <div class="sticky-top" style="top: 80px">
+          <h2 class="fw-bold mb-1">{{ l.title }}</h2>
+          <div class="display-6 text-warning fw-bold mb-3">{{ l.price | auCurrency }}</div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-speedometer2 text-warning"></i><span>{{ l.mileage | number }}km</span></div></div>
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-geo-alt text-warning"></i><span>{{ l.location }}</span></div></div>
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-calendar text-warning"></i><span>{{ l.year }}</span></div></div>
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-fuel-pump text-warning"></i><span>{{ l.fuelType }}</span></div></div>
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-gear text-warning"></i><span>{{ l.transmission }}</span></div></div>
+            <div class="col-6"><div class="d-flex align-items-center gap-2 text-muted small"><i class="bi bi-palette text-warning"></i><span>{{ l.color }}</span></div></div>
+          </div>
+
+          <!-- Current Offers Indicator -->
+          @if (l.currentOffers !== undefined) {
+            <div class="alert alert-dark border-warning small py-2 px-3 mb-3">
+              <i class="bi bi-tag me-2 text-warning"></i>{{ l.currentOffers }} offer(s) currently pending
+            </div>
+          }
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-column gap-2">
+
+            @if (!authState.isAuthenticated()) {
+              <div class="alert alert-warning small py-2 px-3">
+                <i class="bi bi-lock me-1"></i>
+                <a routerLink="/auth/login" class="text-dark fw-semibold">Sign in</a> to send an offer.
+              </div>
+            }
+
+            @if (authState.isAuthenticated() && !isOwner() && !authState.isAdmin() && l.status === 'Active') {
+              <button class="btn btn-warning fw-semibold" (click)="showOfferModal.set(true)">
+                <i class="bi bi-tag me-2"></i>Make an Offer
+              </button>
+            }
+
+            @if (isOwner() && l.status === 'Active') {
+              <button class="btn btn-outline-secondary" (click)="showDeactivateModal.set(true)">
+                <i class="bi bi-pause-circle me-1"></i>Deactivate Listing
+              </button>
+              <button class="btn btn-outline-success" (click)="markSold()">
+                <i class="bi bi-check-circle me-1"></i>Mark as Sold
+              </button>
+            }
+
+            @if (authState.isAdmin()) {
+              @if (l.status === 'PendingApproval') {
+                <button class="btn btn-success fw-semibold" (click)="approveListing()">
+                  <i class="bi bi-check-circle me-1"></i>Approve Listing
+                </button>
+                <button class="btn btn-danger" (click)="showRejectModal.set(true)">
+                  <i class="bi bi-x-circle me-1"></i>Reject Listing
+                </button>
+              }
+              @if (l.status === 'Active') {
+                <button class="btn btn-outline-secondary" (click)="showDeactivateModal.set(true)">
+                  <i class="bi bi-pause-circle me-1"></i>Deactivate
+                </button>
+                <button class="btn btn-outline-success" (click)="markSold()">
+                  <i class="bi bi-check-circle me-1"></i>Mark as Sold
+                </button>
+              }
+            }
+
+            @if (authState.isAuthenticated() && !isOwner() && !authState.isAdmin()) {
+              <button class="btn btn-outline-danger btn-sm" (click)="showReportModal.set(true)">
+                <i class="bi bi-flag me-1"></i>Report This Listing
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description & Details -->
+    <div class="row g-4 mt-2">
+      <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-dark text-white fw-semibold">Description</div>
+          <div class="card-body">
+            <p class="text-muted mb-0" style="white-space: pre-wrap">{{ l.description }}</p>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-dark text-white fw-semibold">Vehicle Details</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-6"><div class="small text-muted">Make</div><div class="fw-semibold">{{ l.make }}</div></div>
+              <div class="col-6"><div class="small text-muted">Model</div><div class="fw-semibold">{{ l.model }}</div></div>
+              <div class="col-6"><div class="small text-muted">Year</div><div class="fw-semibold">{{ l.year }}</div></div>
+              <div class="col-6"><div class="small text-muted">Body Type</div><div class="fw-semibold">{{ l.bodyType }}</div></div>
+              <div class="col-6"><div class="small text-muted">Transmission</div><div class="fw-semibold">{{ l.transmission }}</div></div>
+              <div class="col-6"><div class="small text-muted">Fuel Type</div><div class="fw-semibold">{{ l.fuelType }}</div></div>
+              <div class="col-6"><div class="small text-muted">Exterior Color</div><div class="fw-semibold">{{ l.color }}</div></div>
+              <div class="col-6"><div class="small text-muted">Interior Color</div><div class="fw-semibold">{{ l.interiorColor }}</div></div>
+              @if (l.vin) {
+                <div class="col-12"><div class="small text-muted">VIN</div><div class="fw-semibold font-monospace">{{ l.vin }}</div></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        @if (l.documents && l.documents.length > 0) {
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white fw-semibold">Documents</div>
+            <div class="card-body">
+              @for (doc of l.documents; track doc) {
+                <a [href]="doc" target="_blank" class="d-flex align-items-center gap-2 py-2 text-warning text-decoration-none border-bottom">
+                  <i class="bi bi-file-earmark-text fs-5"></i>
+                  <span class="small">View Document</span>
+                  <i class="bi bi-box-arrow-up-right ms-auto small"></i>
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Seller Info -->
+      <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-dark text-white fw-semibold">Seller Information</div>
+          <div class="card-body text-center">
+            <div class="avatar-circle mx-auto mb-3 bg-warning text-dark fw-bold fs-3">
+              {{ l.seller?.name?.charAt(0) }}
+            </div>
+            <h6 class="fw-bold mb-1">{{ l.seller?.name }}</h6>
+            <div class="text-muted small mb-2">{{ l.seller?.totalListings }} total listings</div>
+            <div class="text-warning mb-3">
+              @for (_ of [1,2,3,4,5]; track $index) {
+                <i class="bi" [class.bi-star-fill]="$index < (l.seller?.rating ?? 0)" [class.bi-star]="$index >= (l.seller?.rating ?? 0)"></i>
+              }
+              <span class="text-muted small ms-1">({{ l.seller?.rating ?? 0 | number:'1.1-1' }})</span>
+            </div>
+            <div class="text-muted small">Listed on {{ l.createdDate | date:'longDate' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offer Modal -->
+  @if (showOfferModal()) {
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Make an Offer</h5>
+            <button type="button" class="btn-close" (click)="showOfferModal.set(false)"></button>
+          </div>
+          <form [formGroup]="offerForm" (ngSubmit)="submitOffer()">
+            <div class="modal-body">
+              <p class="text-muted small">Listed price: <strong class="text-warning">{{ l.price | auCurrency }}</strong></p>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Your Offer (AUD) *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" [class.is-invalid]="offerForm.controls['offerPrice'].invalid && offerForm.controls['offerPrice'].touched" formControlName="offerPrice" placeholder="e.g. 14500" />
+                  <div class="invalid-feedback">Please enter a valid offer price.</div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Message (Optional)</label>
+                <textarea class="form-control" rows="3" formControlName="message" placeholder="Introduce yourself to the seller..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="showOfferModal.set(false)">Cancel</button>
+              <button type="submit" class="btn btn-warning fw-semibold" [disabled]="submitting()">
+                @if (submitting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Submit Offer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reject Modal (Admin) -->
+  @if (showRejectModal()) {
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-danger">Reject Listing</h5>
+            <button type="button" class="btn-close" (click)="showRejectModal.set(false)"></button>
+          </div>
+          <form [formGroup]="rejectForm" (ngSubmit)="rejectListing()">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Rejection Reason *</label>
+                <textarea class="form-control" rows="4" [class.is-invalid]="rejectForm.controls['reason'].invalid && rejectForm.controls['reason'].touched" formControlName="reason" placeholder="Explain the reason for rejection..."></textarea>
+                <div class="invalid-feedback">Reason is required.</div>
+              </div>
+              <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>A chat session will be created with the seller to communicate this reason.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="showRejectModal.set(false)">Cancel</button>
+              <button type="submit" class="btn btn-danger fw-semibold" [disabled]="submitting()">
+                @if (submitting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Reject Listing
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Report Modal -->
+  @if (showReportModal()) {
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Report Listing</h5>
+            <button type="button" class="btn-close" (click)="showReportModal.set(false)"></button>
+          </div>
+          <form [formGroup]="reportForm" (ngSubmit)="reportListing()">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Reason *</label>
+                <input type="text" class="form-control" [class.is-invalid]="reportForm.controls['reason'].invalid && reportForm.controls['reason'].touched" formControlName="reason" placeholder="Brief reason for report" />
+                <div class="invalid-feedback">Reason is required.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Description *</label>
+                <textarea class="form-control" rows="3" [class.is-invalid]="reportForm.controls['description'].invalid && reportForm.controls['description'].touched" formControlName="description" placeholder="Provide more detail..."></textarea>
+                <div class="invalid-feedback">Description is required.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="showReportModal.set(false)">Cancel</button>
+              <button type="submit" class="btn btn-danger fw-semibold" [disabled]="submitting()">
+                @if (submitting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Submit Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Deactivate confirm -->
+  @if (showDeactivateModal()) {
+    <cb-confirm-modal
+      title="Deactivate Listing"
+      message="Are you sure you want to deactivate this listing? It will be hidden from buyers."
+      confirmText="Deactivate"
+      (confirm)="deactivateListing()"
+      (cancel)="showDeactivateModal.set(false)"
+    />
+  }
+}

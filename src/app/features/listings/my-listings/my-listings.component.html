@@ -1,0 +1,60 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">My Listings</h4>
+    <a routerLink="/listings/create" class="btn btn-warning fw-semibold">
+      <i class="bi bi-plus-circle me-2"></i>New Listing
+    </a>
+  </div>
+
+  @if (loading()) {
+    <cb-loading-spinner message="Loading your listings..." />
+  } @else if (listings().length === 0) {
+    <div class="text-center py-5">
+      <i class="bi bi-card-list fs-1 text-muted d-block mb-3"></i>
+      <h5 class="text-muted">No listings yet</h5>
+      <p class="text-muted small">Start by listing your first car!</p>
+      <a routerLink="/listings/create" class="btn btn-warning fw-semibold">List a Car</a>
+    </div>
+  } @else {
+    <div class="row g-3">
+      @for (listing of listings(); track listing.id) {
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex gap-3 align-items-start flex-column flex-md-row">
+              <div class="flex-shrink-0 overflow-hidden rounded" style="width: 100px; height: 80px">
+                @if (listing.images && listing.images.length > 0) {
+                  <img [src]="listing.images[0]" class="w-100 h-100 object-fit-cover" [alt]="listing.title" />
+                } @else {
+                  <div class="w-100 h-100 bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-car-front text-secondary"></i>
+                  </div>
+                }
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                  <h6 class="fw-bold mb-1">{{ listing.title }}</h6>
+                  <cb-status-badge [status]="listing.status" />
+                </div>
+                <div class="text-warning fw-semibold mb-1">{{ listing.price | auCurrency }}</div>
+                <div class="text-muted small d-flex flex-wrap gap-3">
+                  <span><i class="bi bi-speedometer2 me-1"></i>{{ listing.mileage | number }}km</span>
+                  <span><i class="bi bi-geo-alt me-1"></i>{{ listing.location }}</span>
+                </div>
+              </div>
+              <div class="d-flex gap-2 ms-md-auto flex-shrink-0">
+                @if (listing.status === 'Draft') {
+                  <button class="btn btn-outline-warning btn-sm" (click)="submitForApproval(listing.id)">
+                    Submit for Approval
+                  </button>
+                }
+                <a [routerLink]="['/listings', listing.id]" class="btn btn-outline-dark btn-sm">
+                  <i class="bi bi-eye me-1"></i>View
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

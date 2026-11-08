@@ -1,0 +1,87 @@
+<div class="container py-4">
+  @if (loading()) {
+    <cb-loading-spinner />
+  } @else if (user(); as u) {
+    <div class="row g-4">
+      <!-- Profile Card -->
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm text-center p-4">
+          <div class="avatar-circle mx-auto mb-3 bg-warning text-dark fw-bold" style="width: 72px; height: 72px; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-size: 2rem">
+            {{ u.fullName?.charAt(0) }}
+          </div>
+          <h5 class="fw-bold mb-1">{{ u.fullName }}</h5>
+          <p class="text-muted small mb-2">{{ u.email }}</p>
+          <cb-status-badge [status]="u.status" />
+          <hr />
+          <div class="row g-2 text-center small">
+            <div class="col-4">
+              <div class="fw-bold fs-5 text-warning">{{ u.totalListings }}</div>
+              <div class="text-muted">Listings</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold fs-5 text-warning">{{ u.totalOffers }}</div>
+              <div class="text-muted">Offers</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold fs-5 text-warning">{{ u.rating | number:'1.1-1' }}</div>
+              <div class="text-muted">Rating</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="col-12 col-md-8">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-dark text-white fw-semibold">Account Details</div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-4 text-muted small">Full Name</dt>
+              <dd class="col-sm-8">{{ u.fullName }}</dd>
+              <dt class="col-sm-4 text-muted small">Email</dt>
+              <dd class="col-sm-8">{{ u.email }}</dd>
+              <dt class="col-sm-4 text-muted small">Phone</dt>
+              <dd class="col-sm-8">{{ u.phoneNumber }}</dd>
+              <dt class="col-sm-4 text-muted small">Role</dt>
+              <dd class="col-sm-8">{{ u.role }}</dd>
+              <dt class="col-sm-4 text-muted small">Member Since</dt>
+              <dd class="col-sm-8">{{ u.registrationDate | date:'longDate' }}</dd>
+              @if (u.lastLoginDate) {
+                <dt class="col-sm-4 text-muted small">Last Login</dt>
+                <dd class="col-sm-8">{{ u.lastLoginDate | date:'medium' }}</dd>
+              }
+            </dl>
+          </div>
+        </div>
+
+        <!-- Account Status Notice -->
+        @if (u.status !== 'Verified') {
+          <div class="alert alert-warning mt-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Account Status: {{ u.status }}</strong><br />
+            <span class="small">
+              @if (u.status === 'PendingVerification') {
+                Your identity documents are under review. You'll be notified once approved.
+              } @else if (u.status === 'PendingEmailVerification') {
+                Please verify your email address to continue.
+              } @else if (u.status === 'Rejected') {
+                Your account was rejected. Please check your chat for the reason.
+              } @else if (u.status === 'Suspended') {
+                Your account has been suspended. Contact support for more info.
+              }
+            </span>
+          </div>
+        }
+
+        <div class="d-flex gap-2 mt-3">
+          <a routerLink="/listings/my" class="btn btn-outline-warning btn-sm">
+            <i class="bi bi-card-list me-1"></i>My Listings
+          </a>
+          <a routerLink="/chat" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-chat-dots me-1"></i>My Chats
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,119 @@
+// Bootstrap
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+// ── Brand tokens ──────────────────────────────────────────────
+:root {
+  --cb-yellow: #ffc107;
+  --cb-dark:   #1a1a2e;
+  --cb-card-radius: 0.75rem;
+}
+
+// ── Global resets / base ──────────────────────────────────────
+html, body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+main {
+  min-height: calc(100vh - 64px - 200px);
+}
+
+// ── Navbar ────────────────────────────────────────────────────
+.navbar-brand span {
+  letter-spacing: -0.5px;
+}
+
+// ── Cards ─────────────────────────────────────────────────────
+.card {
+  border-radius: var(--cb-card-radius);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+  }
+}
+
+// Listing card thumbnail
+.listing-card img,
+.listing-thumb {
+  object-fit: cover;
+  border-radius: var(--cb-card-radius) var(--cb-card-radius) 0 0;
+}
+
+// ── Avatar circle ─────────────────────────────────────────────
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  background-color: var(--cb-yellow);
+  color: #000;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+// ── Stat icon in dashboard ────────────────────────────────────
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+// ── Chat ──────────────────────────────────────────────────────
+.chat-session-item {
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover, &.active {
+    background-color: rgba(255, 193, 7, 0.08);
+  }
+}
+
+.chat-bubble {
+  max-width: 72%;
+  word-break: break-word;
+  border-radius: 1rem;
+
+  &.sent {
+    background-color: var(--cb-yellow);
+    color: #000;
+    border-bottom-right-radius: 0.25rem;
+  }
+
+  &.received {
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 0.25rem;
+  }
+}
+
+// ── File upload dropzone ──────────────────────────────────────
+.dropzone {
+  border: 2px dashed #dee2e6;
+  border-radius: var(--cb-card-radius);
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &.drag-over {
+    border-color: var(--cb-yellow);
+    background-color: rgba(255, 193, 7, 0.04);
+  }
+}
+
+// ── Breadcrumbs / utility ─────────────────────────────────────
+.text-yellow { color: var(--cb-yellow) !important; }
+
+a { color: var(--cb-yellow); }
+a:hover { color: darken(#ffc107, 12%); }
+
+.btn-warning { color: #000 !important; }
+
+// ── Responsive helpers ────────────────────────────────────────
+@media (max-width: 575.98px) {
+  .chat-bubble { max-width: 90%; }
+}
