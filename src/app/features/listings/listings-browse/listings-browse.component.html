@@ -17,6 +17,57 @@
   </div>
 </section>
 
+<!-- Featured -->
+@if (featured(); as f) {
+  <section class="bg-dark pb-4">
+    <div class="container">
+      <a [routerLink]="['/listings', f.id]" class="text-decoration-none">
+        <div class="row g-2">
+          <div class="col-12 col-lg-8">
+            <div class="position-relative rounded overflow-hidden bg-black" style="height: 380px">
+              @if (f.images.length > 0) {
+                <img [src]="f.images[0]" [alt]="f.title" class="w-100 h-100 object-fit-cover" />
+              } @else {
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-25">
+                  <i class="bi bi-image fs-1 text-secondary"></i>
+                </div>
+              }
+              <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 text-uppercase">Featured</span>
+              <div class="position-absolute bottom-0 start-0 end-0 px-3 pb-2 pt-4 d-flex justify-content-between align-items-end text-white"
+                   style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)">
+                <div>
+                  <div class="fs-6 fw-bold lh-sm">{{ f.year }} {{ f.make }} {{ f.model }}</div>
+                  <div class="small opacity-75" style="font-size: 0.75rem">{{ f.mileage | number }}km</div>
+                </div>
+                <span class="badge bg-dark bg-opacity-75 fw-normal border border-primary">
+                  Starting bid {{ f.price | auCurrency }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="row g-2">
+              @for (slot of thumbSlots; track slot) {
+                <div class="col-6">
+                  <div class="rounded overflow-hidden bg-black" style="height: 187px">
+                    @if (f.images[slot]) {
+                      <img [src]="f.images[slot]" [alt]="f.title" class="w-100 h-100 object-fit-cover" />
+                    } @else {
+                      <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-25">
+                        <i class="bi bi-image text-secondary"></i>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+}
+
 <!-- Filters + Results -->
 <div class="container py-4">
   <div class="row g-4">
@@ -88,6 +139,9 @@
                       <i class="bi bi-car-front fs-1 text-secondary"></i>
                     </div>
                   }
+                  @if (listing.isFeatured) {
+                    <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2 text-uppercase">Featured</span>
+                  }
                   <div class="position-absolute top-0 end-0 m-2">
                     <cb-status-badge [status]="listing.status" />
                   </div>
@@ -98,7 +152,7 @@
                   <div class="d-flex flex-wrap gap-2 text-muted small">
                     <span><i class="bi bi-speedometer2 me-1"></i>{{ listing.mileage | number }}km</span>
                     <span><i class="bi bi-geo-alt me-1"></i>{{ listing.location }}</span>
-                    <span><i class="bi bi-calendar me-1"></i>{{ listing.year }}</span>
+                    <span><i class="bi bi-gear-wide-connected me-1"></i>{{ engineLabel(listing.engineSize) }}</span>
                   </div>
                 </div>
                 <div class="card-footer bg-transparent border-top-0 pt-0">

@@ -67,6 +67,10 @@
                     data-bs-toggle="modal" data-bs-target="#rejectModal" title="Reject">
                     <i class="bi bi-x-circle"></i>
                   </button>
+                  <button class="btn" [class.btn-warning]="listing.isFeatured" [class.btn-outline-warning]="!listing.isFeatured"
+                    (click)="toggleFeatured(listing)" [title]="listing.isFeatured ? 'Unfeature' : 'Feature'">
+                    <i class="bi" [class.bi-star-fill]="listing.isFeatured" [class.bi-star]="!listing.isFeatured"></i>
+                  </button>
                   <button class="btn btn-outline-warning" (click)="deactivate(listing.id)" title="Deactivate">
                     <i class="bi bi-slash-circle"></i>
                   </button>

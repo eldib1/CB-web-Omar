@@ -11,3 +11,7 @@
 .navbar .nav-link.active {
   color: var(--bs-warning) !important;
 }
+
+.navbar-nav.me-auto .nav-link {
+  font-weight: 700;
+}

@@ -95,6 +95,18 @@ export class ListingManagementComponent implements OnInit {
     });
   }
 
+  /** Features or unfeatures the given listing and reloads the list. */
+  toggleFeatured(listing: CarListingSummary) {
+    const call = listing.isFeatured ? this.listingsSvc.unfeature(listing.id) : this.listingsSvc.feature(listing.id);
+    call.subscribe({
+      next: () => {
+        this.toast.success(listing.isFeatured ? 'Listing unfeatured' : 'Listing featured');
+        this.loadListings();
+      },
+      error: () => this.toast.error('Failed to update featured listing')
+    });
+  }
+
   markSold(id: number) {
     this.listingsSvc.markAsSold(id).subscribe({
       next: () => { this.toast.success('Listing marked as sold'); this.loadListings(); },

@@ -2,37 +2,79 @@
 @import "bootstrap/scss/bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-// ── Brand tokens ──────────────────────────────────────────────
+// -- Brand tokens: black + racing blue + volt yellow --------------------------
 :root {
-  --cb-yellow: #ffc107;
-  --cb-dark:   #1a1a2e;
+  --cb-volt:      #ceff00;
+  --cb-volt-dim:  #b3e000;
+  --cb-blue:      #1e5bff;
+  --cb-blue-dim:  #1647cc;
+  --cb-black:     #050505;
+  --cb-surface:   #101014;
+  --cb-surface-2: #17171d;
+  --cb-border:    #26262e;
+  --cb-yellow:    var(--cb-volt); // legacy alias
   --cb-card-radius: 0.75rem;
+
+  // Re-map Bootstrap's semantic colours to the brand palette
+  --bs-warning:     #ceff00;
+  --bs-warning-rgb: 206, 255, 0;
+  --bs-primary:     #1e5bff;
+  --bs-primary-rgb: 30, 91, 255;
+  --bs-dark-rgb:    20, 20, 26;
 }
 
-// ── Global resets / base ──────────────────────────────────────
+[data-bs-theme="dark"] {
+  --bs-body-bg:        #050505;
+  --bs-body-bg-rgb:    5, 5, 5;
+  --bs-body-color:     #e8e8ec;
+  --bs-secondary-bg:   #17171d;
+  --bs-tertiary-bg:    #101014;
+  --bs-border-color:   #26262e;
+  --bs-link-color:     #ceff00;
+  --bs-link-color-rgb: 206, 255, 0;
+  --bs-link-hover-color:     #b3e000;
+  --bs-link-hover-color-rgb: 179, 224, 0;
+  --bs-primary-text-emphasis: #6f98ff;
+  --bs-warning-text-emphasis: #ceff00;
+}
+
+// -- Global resets / base -----------------------------------------------------
 html, body {
   min-height: 100vh;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #f8f9fa;
-  color: #212529;
+  background-color: var(--cb-black);
+  color: #e8e8ec;
 }
 
 main {
   min-height: calc(100vh - 64px - 200px);
 }
 
-// ── Navbar ────────────────────────────────────────────────────
+::selection {
+  background: var(--cb-blue);
+  color: #fff;
+}
+
+// -- Navbar -------------------------------------------------------------------
+.navbar.bg-dark {
+  background-color: #000 !important;
+  border-bottom: 1px solid var(--cb-blue);
+}
+
 .navbar-brand span {
   letter-spacing: -0.5px;
 }
 
-// ── Cards ─────────────────────────────────────────────────────
+// -- Cards --------------------------------------------------------------------
 .card {
+  --bs-card-bg: var(--cb-surface);
+  --bs-card-border-color: var(--cb-border);
   border-radius: var(--cb-card-radius);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+    border-color: var(--cb-blue);
+    box-shadow: 0 0 24px rgba(30, 91, 255, 0.28) !important;
   }
 }
 
@@ -43,11 +85,82 @@ main {
   border-radius: var(--cb-card-radius) var(--cb-card-radius) 0 0;
 }
 
-// ── Avatar circle ─────────────────────────────────────────────
+// Light-theme utility classes used in templates -> dark surfaces
+.bg-white { background-color: var(--cb-surface) !important; }
+.bg-light { background-color: var(--cb-surface-2) !important; }
+
+// -- Buttons ------------------------------------------------------------------
+.btn-warning {
+  --bs-btn-bg: var(--cb-volt);
+  --bs-btn-border-color: var(--cb-volt);
+  --bs-btn-hover-bg: var(--cb-volt-dim);
+  --bs-btn-hover-border-color: var(--cb-volt-dim);
+  --bs-btn-active-bg: var(--cb-volt-dim);
+  --bs-btn-active-border-color: var(--cb-volt-dim);
+  --bs-btn-disabled-bg: var(--cb-volt);
+  --bs-btn-disabled-border-color: var(--cb-volt);
+  --bs-btn-color: #000;
+  --bs-btn-hover-color: #000;
+  --bs-btn-active-color: #000;
+  font-weight: 600;
+}
+
+.btn-outline-warning {
+  --bs-btn-color: var(--cb-volt);
+  --bs-btn-border-color: var(--cb-volt);
+  --bs-btn-hover-bg: var(--cb-volt);
+  --bs-btn-hover-border-color: var(--cb-volt);
+  --bs-btn-hover-color: #000;
+  --bs-btn-active-bg: var(--cb-volt);
+  --bs-btn-active-border-color: var(--cb-volt);
+  --bs-btn-active-color: #000;
+}
+
+.btn-primary,
+.btn-dark {
+  --bs-btn-bg: var(--cb-blue);
+  --bs-btn-border-color: var(--cb-blue);
+  --bs-btn-hover-bg: var(--cb-blue-dim);
+  --bs-btn-hover-border-color: var(--cb-blue-dim);
+  --bs-btn-active-bg: var(--cb-blue-dim);
+  --bs-btn-active-border-color: var(--cb-blue-dim);
+  --bs-btn-disabled-bg: var(--cb-blue);
+  --bs-btn-disabled-border-color: var(--cb-blue);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+}
+
+.btn-outline-primary,
+.btn-outline-dark {
+  --bs-btn-color: #6f98ff;
+  --bs-btn-border-color: var(--cb-blue);
+  --bs-btn-hover-bg: var(--cb-blue);
+  --bs-btn-hover-border-color: var(--cb-blue);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--cb-blue);
+  --bs-btn-active-border-color: var(--cb-blue);
+  --bs-btn-active-color: #fff;
+}
+
+// -- Forms --------------------------------------------------------------------
+.form-control,
+.form-select {
+  background-color: var(--cb-surface-2);
+  border-color: var(--cb-border);
+
+  &:focus {
+    background-color: var(--cb-surface-2);
+    border-color: var(--cb-blue);
+    box-shadow: 0 0 0 0.2rem rgba(30, 91, 255, 0.3);
+  }
+}
+
+// -- Avatar circle ------------------------------------------------------------
 .avatar-circle {
   width: 36px;
   height: 36px;
-  background-color: var(--cb-yellow);
+  background-color: var(--cb-volt);
   color: #000;
   border-radius: 50%;
   display: inline-flex;
@@ -58,20 +171,20 @@ main {
   flex-shrink: 0;
 }
 
-// ── Stat icon in dashboard ────────────────────────────────────
+// -- Stat icon in dashboard ---------------------------------------------------
 .stat-icon {
   width: 52px;
   height: 52px;
   flex-shrink: 0;
 }
 
-// ── Chat ──────────────────────────────────────────────────────
+// -- Chat ---------------------------------------------------------------------
 .chat-session-item {
   cursor: pointer;
   transition: background-color 0.15s;
 
   &:hover, &.active {
-    background-color: rgba(255, 193, 7, 0.08);
+    background-color: rgba(206, 255, 0, 0.08);
   }
 }
 
@@ -81,39 +194,40 @@ main {
   border-radius: 1rem;
 
   &.sent {
-    background-color: var(--cb-yellow);
-    color: #000;
+    background-color: var(--cb-blue);
+    color: #fff;
     border-bottom-right-radius: 0.25rem;
   }
 
   &.received {
-    background-color: #e9ecef;
-    color: #212529;
+    background-color: var(--cb-surface-2);
+    color: #e8e8ec;
     border-bottom-left-radius: 0.25rem;
   }
 }
 
-// ── File upload dropzone ──────────────────────────────────────
+// -- File upload dropzone -----------------------------------------------------
 .dropzone {
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--cb-border);
   border-radius: var(--cb-card-radius);
   transition: border-color 0.2s, background-color 0.2s;
 
   &.drag-over {
-    border-color: var(--cb-yellow);
-    background-color: rgba(255, 193, 7, 0.04);
+    border-color: var(--cb-volt);
+    background-color: rgba(206, 255, 0, 0.05);
   }
 }
 
-// ── Breadcrumbs / utility ─────────────────────────────────────
-.text-yellow { color: var(--cb-yellow) !important; }
+// -- Utility ------------------------------------------------------------------
+.text-yellow { color: var(--cb-volt) !important; }
 
-a { color: var(--cb-yellow); }
-a:hover { color: darken(#ffc107, 12%); }
+a { color: var(--cb-volt); }
+a:hover { color: var(--cb-volt-dim); }
 
 .btn-warning { color: #000 !important; }
+.btn-primary, .btn-dark { color: #fff !important; }
 
-// ── Responsive helpers ────────────────────────────────────────
+// -- Responsive helpers -------------------------------------------------------
 @media (max-width: 575.98px) {
   .chat-bubble { max-width: 90%; }
 }

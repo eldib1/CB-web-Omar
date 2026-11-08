@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ListingStatus } from '../models/enums';
 import {
   ApiResponse,
   PaginatedResponse,
@@ -11,6 +12,34 @@ import {
   ListingSearchParams,
   RejectListingRequest,
 } from '../models';
+
+const STATUS_BY_CODE: ListingStatus[] = [
+  ListingStatus.Draft,
+  ListingStatus.PendingApproval,
+  ListingStatus.Active,
+  ListingStatus.Inactive,
+  ListingStatus.Sold,
+  ListingStatus.Rejected,
+];
+
+/** Adapts the API's CarListingDto to the frontend's CarListingSummary. */
+function toSummary(d: any): CarListingSummary {
+  return {
+    id: d.id,
+    title: d.listingTitle,
+    make: d.make,
+    model: d.model,
+    year: d.year,
+    engineSize: d.engineSize ?? '',
+    price: d.startingPrice,
+    mileage: d.mileage,
+    location: d.sellerLocation ?? '',
+    images: d.imageUrls ?? [],
+    description: d.listingDescription ?? '',
+    status: STATUS_BY_CODE[d.status] ?? ListingStatus.Active,
+    isFeatured: !!d.isFeatured,
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ListingsService {
@@ -24,9 +53,33 @@ export class ListingsService {
         httpParams = httpParams.set(key, String(val));
       }
     });
-    return this.http.get<ApiResponse<PaginatedResponse<CarListingSummary>>>(`${this.base}/search`, {
-      params: httpParams,
-    });
+    return this.http.get<any>(`${this.base}/search`, { params: httpParams }).pipe(
+      map((res) => ({
+        success: true,
+        message: '',
+        data: {
+          items: (res.items ?? []).map(toSummary),
+          totalCount: res.totalItems ?? 0,
+          pageNumber: res.pageNumber ?? 1,
+          pageSize: res.pageSize ?? params.pageSize ?? 12,
+        },
+      })),
+    );
+  }
+
+  /** Returns the currently featured listing, or null if none is set. */
+  getFeatured(): Observable<CarListingSummary | null> {
+    return this.http.get<any>(`${this.base}/featured`).pipe(map(toSummary));
+  }
+
+  /** Marks a listing as the featured one; unfeatures any other (admin only). */
+  feature(id: number): Observable<any> {
+    return this.http.post<any>(`${this.base}/${id}/feature`, {});
+  }
+
+  /** Removes the featured flag from a listing (admin only). */
+  unfeature(id: number): Observable<any> {
+    return this.http.post<any>(`${this.base}/${id}/unfeature`, {});
   }
 
   getById(id: number): Observable<CarListingDetail> {

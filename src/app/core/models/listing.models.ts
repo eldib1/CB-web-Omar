@@ -6,12 +6,15 @@ export interface CarListingSummary {
   make: string;
   model: string;
   year: number;
+  /** Raw engine description from the API, e.g. "4.0L Twin-Turbo V8". */
+  engineSize?: string;
   price: number;
   mileage: number;
   location: string;
   images: string[];
   description: string;
   status: ListingStatus;
+  isFeatured?: boolean;
 }
 
 export interface SellerInfo {

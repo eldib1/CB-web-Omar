@@ -48,7 +48,7 @@ import { Component, input, output, signal } from '@angular/core';
   `,
   styles: [`
     .file-drop-zone {
-      border-color: #dee2e6;
+      border-color: #26262e;
       transition: border-color 0.2s, background 0.2s;
       cursor: pointer;
       &.drag-over {
