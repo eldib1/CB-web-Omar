@@ -32,6 +32,16 @@ export class MyListingsComponent implements OnInit {
     });
   }
 
+  /** Shortens an engine description to displacement and layout, e.g. "4.0L Twin-Turbo V8" -> "4.0L V8". */
+  engineLabel(engine?: string): string {
+    if (!engine) return '';
+    const disp = engine.match(/(\d+(?:\.\d+)?)\s*L\b/i)?.[1];
+    const words: Record<string, string> = { four: '4', six: '6', eight: '8', ten: '10', twelve: '12' };
+    const layout = engine.match(/\b(V\d+|W\d+|I\d+|(?:Flat|Inline)[- ](?:\d+|Four|Six|Eight)|Rotary)\b/i)?.[1]
+      ?.replace(/[- ](Four|Six|Eight)/i, (_m, w) => '-' + words[w.toLowerCase()]);
+    return [disp ? `${disp}L` : '', layout ?? ''].filter(Boolean).join(' ') || engine;
+  }
+
   submitForApproval(id: number): void {
     this.listingsService.submitForApproval(id).subscribe({
       next: () => { this.toast.success('Listing submitted for approval!'); this.ngOnInit(); },
